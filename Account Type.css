@@ -1,0 +1,83 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background-color: #ffffff;
+    padding: 30px 50px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 350px;
+    width: 100%;
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.option-btn {
+    width: 150px; /* Fixed width for equal size */
+    height: 50px; /* Fixed height for equal size */
+    font-size: 16px;
+    color: #333333;
+    border: 2px solid #333333;
+    border-radius: 20px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    line-height: 45px; /* Ensures text is vertically centered */
+    display: inline-block;
+}
+
+/* Specific styles for each button */
+.doctor-btn .option-btn {
+    color: #333333;
+    border-color: #333333;
+}
+
+.doctor-btn .option-btn:hover {
+    background-color: #4caf50;
+    border-color: #388e3c;
+    color: #ffffff;
+}
+
+.patient-btn .option-btn {
+    color: #333333;
+    border-color: #ff5722;
+}
+
+.patient-btn .option-btn:hover {
+    background-color: #ff5722;
+    border-color: #e64a19;
+    color: #ffffff;
+}
+
+.option-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(56, 142, 60, 0.4);
+}

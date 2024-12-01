@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Profile</title>
+    <link rel="stylesheet" href="Patient Profile.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Patient Profile</h1>
+
+        <div class="form-container">
+            <div class="form-section">
+                <form id="patient-form">
+                    <div class="form-group">
+                        <label for="height">Height (cm)</label>
+                        <input type="text" id="height" name="height" placeholder="Enter height in cm">
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="text" id="weight" name="weight" placeholder="Enter weight in kg">
+                    </div>
+                    <div class="form-group">
+                        <label for="health-history">Health History</label>
+                        <textarea id="health-history" name="health-history" rows="4" placeholder="Enter past medical conditions, surgeries, allergies, etc."></textarea>
+                    </div>
+                    <div class="form-group" id="emergency-container">
+                        <label for="emergency-contacts">Emergency Contacts</label>
+                        <div class="emergency-row">
+                            <input type="text" name="emergency-contacts" placeholder="Enter emergency contact">
+                            <button type="button" class="add-btn">+ Add</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Functionality to add new emergency contact fields dynamically
+        document.getElementById('emergency-container').addEventListener('click', function(event) {
+            if (event.target.classList.contains('add-btn')) {
+                const emergencyRow = event.target.closest('.emergency-row');
+                const newRow = document.createElement('div');
+                newRow.classList.add('emergency-row');
+                
+                const newInput = document.createElement('input');
+                newInput.type = 'text';
+                newInput.name = 'emergency-contacts';
+                newInput.placeholder = 'Enter emergency contact';
+                
+                const newButton = document.createElement('button');
+                newButton.type = 'button';
+                newButton.classList.add('add-btn');
+                newButton.textContent = '+ Add';
+                
+                // Append new input and button to the new row
+                newRow.appendChild(newInput);
+                newRow.appendChild(newButton);
+                
+                // Append the new row to the emergency container
+                document.getElementById('emergency-container').appendChild(newRow);
+
+                // Remove the add button from the first row
+                emergencyRow.querySelector('.add-btn').remove();
+            }
+        });
+
+        // Validate form before submission
+        document.getElementById('patient-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            const height = document.getElementById('height').value;
+            const weight = document.getElementById('weight').value;
+            const healthHistory = document.getElementById('health-history').value;
+            const emergencyContacts = document.querySelectorAll('[name="emergency-contacts"]');
+
+            // Check if height and weight are valid numbers
+            if (isNaN(height) || height === "" || isNaN(weight) || weight === "") {
+                alert("Please enter valid numbers for Height and Weight.");
+                return; // Stop form submission
+            }
+
+            // Check if all emergency contacts are valid numbers
+            if (Array.from(emergencyContacts).some(input => isNaN(input.value) || input.value === "")) {
+                alert("Please enter valid numbers for all emergency contacts.");
+                return; // Stop form submission
+            }
+
+            // Check if all fields are filled
+            if (height && weight && healthHistory && Array.from(emergencyContacts).every(input => input.value)) {
+                // Redirect to login page if all fields are filled
+                window.location.href = 'log in.html'; // Redirect to the login page
+            } else {
+                alert("Please fill out all fields before proceeding.");
+            }
+        });
+    </script>
+</body>
+</html>

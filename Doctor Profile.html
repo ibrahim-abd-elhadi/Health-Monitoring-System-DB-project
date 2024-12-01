@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Information Form</title>
+    <link rel="stylesheet" href="Doctor Profile.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Doctor Profile</h1>
+
+        <div class="form-container">
+            <div class="form-section left">
+                <form id="doctor-form" action="log in.html" method="POST" onsubmit="return validateForm()">
+                    <div class="form-group">
+                        <label for="specialization">Specialization</label>
+                        <input type="text" id="specialization" name="specialization" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="qualifications">Qualifications</label>
+                        <input type="text" id="qualifications" name="qualifications" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="availability">Availability</label>
+                        <input type="text" id="availability" name="availability" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function validateForm() {
+            // Check if all fields are filled
+            const specialization = document.getElementById('specialization').value;
+            const qualifications = document.getElementById('qualifications').value;
+            const availability = document.getElementById('availability').value;
+            
+            if (specialization === "" || qualifications === "" || availability === "") {
+                alert("Please fill in all the fields.");
+                return false; // Prevent form submission if any field is empty
+            }
+            return true; // Allow form submission if all fields are filled
+        }
+    </script>
+</body>
+</html>
