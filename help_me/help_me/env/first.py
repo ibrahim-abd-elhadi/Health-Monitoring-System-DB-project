@@ -138,6 +138,8 @@ def patient_profile_signup():
             INSERT INTO users (name, email, password, phone, role, gender, age)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
+
+
         cursor.execute(query, (user_name, email, password, phone, role, gender, age))
 
         user_id = cursor.lastrowid
@@ -165,16 +167,50 @@ def patient_details():
         height = float(request.form['height'])
         weight = float(request.form['weight'])
         health_history = request.form.get('health-history', '')
-        emergency_contacts = request.form.getlist('emergency-contacts')
+        emergency_contacts = request.form.getlist('emergency-contact')
         emergency_contacts_str = ','.join(emergency_contacts)
 
         connection = create_connection()
         cursor = connection.cursor()
-        query = """
-            INSERT INTO patients (patient_id, height, weight, blood_type, chronic_conditions, emergency_contacts)
-            VALUES (%s, %s, %s, NULL, %s, %s)
-        """
-        cursor.execute(query, (user_id, height, weight, health_history, emergency_contacts_str))
+        #query = """
+        #    INSERT INTO patients (patient_id, height, weight, blood_type, chronic_conditions, emergency_contact)
+        #    VALUES (%s, %s, %s, 'NULL' , %s, %s)
+        #"""
+
+
+
+
+        # الخطوة 1: الحصول على آخر user_id من جدول users
+        query_last_user_id = "SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1"
+
+        try:
+        #    تنفيذ الاستعلام للحصول على آخر user_id
+            cursor.execute(query_last_user_id)
+            last_user_id = cursor.fetchone()
+
+            if last_user_id:
+                user_id = last_user_id[0]  # استخراج آخر user_id
+
+                # الخطوة 2: إدخال user_id في جدول patients
+                query_insert_patient = """
+                    INSERT INTO patients (patient_id, height, weight, blood_type, chronic_conditions, emergency_contact) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """
+                # استبدل القيم المناسبة هنا
+                patient_data = (user_id, height, weight, '+a', 'None', emergency_contacts_str)
+
+                cursor.execute(query_insert_patient, patient_data)
+                connection.commit()  # حفظ التغييرات في قاعدة البيانات
+                flash("New patient added successfully.")
+            else:
+                flash("No users found in the database.")
+        except Exception as e:
+            flash(f"An error occurred: {e}")
+
+
+#        query = """UPDATE patients SET height = %s, weight = %s, health_history = %s, emergency_contact = %s WHERE patient_id = 4 """
+
+#        cursor.execute(query, (user_id, height, weight, health_history, emergency_contacts_str))
 
         connection.commit()
         cursor.close()
@@ -185,6 +221,9 @@ def patient_details():
 
     return render_template('patient_details.html', user_id=user_id)
 
+
+
+#--------------------------------------------------------------------------------------------------------------------#
 ## Home Page
 @app.route('/index')
 def index():

@@ -13,7 +13,7 @@
         <h1>Welcome, User ID: {{ user_id }}</h1>
         <div class="form-container">
             <div class="form-section">
-                <form id="patient-form">
+                <form method="POST" action="{{ url_for('patient_details') }}">
                     <div class="form-group">
                         <label for="height">Height (cm)</label>
                         <input type="text" id="height" name="height" placeholder="Enter height in cm">
