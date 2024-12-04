@@ -1,0 +1,121 @@
+/* General Body Styling */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f9; /* Light gray background */
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* Page Title */
+.title {
+    font-size: 2rem;
+    color: #000; /* Green color */
+    margin: 40px 0 20px;
+    text-align: center;
+}
+
+/* Container Styling */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/* Form Container */
+.form-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Form Section Styling */
+.form-section {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 60px;
+    padding-left: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+.form-section.left {
+    margin-right: 10px;
+}
+
+.form-section.right {
+    margin-left: 10px;
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    text-align: left;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    color: #333333;
+    margin-bottom: 5px;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="date"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+    border: 1px solid #cccccc; /* Light gray border */
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    outline: none;
+    transition: all 0.3s;
+}
+
+input:focus,
+select:focus {
+    border-color: #4caf50;
+    background-color: #ffffff;
+}
+
+/* Submit Button */
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #4caf50; /* Green button */
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #388e3c; /* Darker green */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .form-container {
+        flex-direction: column;
+    }
+
+    .form-section {
+        margin: 0;
+        margin-bottom: 20px;
+    }
+}

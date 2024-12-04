@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Account Type</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background-color: #ffffff;
+            padding: 30px 50px;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            width: 150px;
+            height: 50px;
+            font-size: 16px;
+            color: #333333;
+            border: 2px solid #333333;
+            border-radius: 20px;
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            line-height: 45px;
+        }
+
+        .option-btn:hover {
+            background-color: #4caf50;
+            color: #ffffff;
+        }
+
+        .patient-btn:hover {
+            background-color: #ff5722;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Choose Your Account Type</h2>
+            <div class="button-container">
+                <!-- Doctor Form -->
+                <form action="{{ url_for('doctor_profile_signup') }}" method="GET">
+                    <button type="submit" class="option-btn"  name="account_type" value="doctor">Doctor</button>
+                </form>
+
+                <!-- Patient Form -->
+                <form action="{{ url_for('patient_profile_signup') }}" method="GET">
+                    <button type="submit" class="option-btn patient-btn" name="account_type" value="patient">Patient</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

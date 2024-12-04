@@ -24,7 +24,7 @@ def create_connection():
 
 
 # إنشاء تطبيق Flask
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 app.secret_key = 'your_secret_key'  # مهمة لاستخدام الرسائل عبر flash
 
 
@@ -53,13 +53,13 @@ def login():
         # check if user exit or no
         if user is None:
             flash('Email or password is incorrect', 'error')
-            return render_template('login.html')
+            return render_template('log in.html')
         if email != user[2]:
             flash('Email not exit', 'error')
-            return render_template('login.html')
+            return render_template('log in.html')
         elif password != user[3]:
             flash('Password not correct', 'error')
-            return render_template('login.html')
+            return render_template('log in.html')
         elif email == user[2] and password == user[3] and user[5].lower() == 'patient':
             flash('Login successful!', 'success')
             return redirect(url_for('لسه هدخله علي الصفحة بتاعته المريض '))###############
@@ -69,7 +69,7 @@ def login():
         else:
             error = flash('Invalid username or password', 'error')
 
-    return render_template('login.html', error=error)
+    return render_template('log in.html', error=error)
 
 
 
@@ -87,7 +87,7 @@ def which():
         elif account_type  == 'patient':
             return redirect(url_for('patient_profile_signup'))
         
-    return render_template('Account_Type.html')
+    return render_template('Account Type.html')
 
 
 
@@ -123,7 +123,7 @@ def doctor_profile_signup():
 
         if existing_user:
             flash('Email already exists! Please log in.', 'danger')
-            return redirect(url_for('login'))  # توجيه المستخدم إلى صفحة تسجيل الدخول
+            return redirect(url_for('log in'))  # توجيه المستخدم إلى صفحة تسجيل الدخول
 
         # إدخال البيانات في قاعدة البيانات
         query = """
