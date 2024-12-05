@@ -8,7 +8,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='Saher1234$',  # Update your MySQL password here
+            password='AQI.ib1235879',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -23,6 +23,7 @@ app.secret_key = 'your_secret_key'  # Used for flash messages and session manage
 # Routes
 
 ## Login Page
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
