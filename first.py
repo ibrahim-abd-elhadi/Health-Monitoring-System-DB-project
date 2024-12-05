@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='Saher1234$',  # تأكد من تغيير كلمة المرور إذا لزم الأمر
+            password='Mohamed0159',  # تأكد من تغيير كلمة المرور إذا لزم الأمر
             database='healthcaresystem'
         )
         return connection
