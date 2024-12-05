@@ -117,19 +117,19 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Sara Ahmed</td>
+                                <td>Rabies</td>
                                 <td class="danger">In danger</td>
                                 <td>01 Dec 2023</td>
                                 <td class="actions"><button>Call Emergency</button></td>
                             </tr>
                             <tr>
-                                <td>Mona Khaled</td>
+                                <td>Bordetella</td>
                                 <td class="alert">Abnormal</td>
                                 <td>11 Dec 2024</td>
                                 <td class="actions"><button>Alert</button></td>
                             </tr>
                             <tr>
-                                <td>Tarek Fawzy</td>
+                                <td>Distemper</td>
                                 <td class="normal">Normal</td>
                                 <td>27 Jun 2024</td>
                                 <td class="actions"><button>Chat</button></td>
@@ -151,63 +151,7 @@
             </div>
         </main>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Fetch data passed from Flask to JavaScript
-            const activity = {{ activity | safe }};
-            const sleep = {{ sleep | safe }};
-            const wellness = {{ wellness | safe }};
-            const healthTrend = {{ health_trend | tojson | safe }}; // Serialize health trend properly
-    
-            // Function to update a progress circle
-            function updateCircle(cardId, percentage) {
-                const circle = document.querySelector(`#${cardId} .progress-bar`);
-                const text = document.querySelector(`#${cardId} .percentage`);
-                const radius = circle.r.baseVal.value;
-                const circumference = 2 * Math.PI * radius;
-    
-                circle.style.strokeDasharray = `${circumference}`;
-                circle.style.strokeDashoffset = `${circumference - (percentage / 100) * circumference}`;
-                text.textContent = `${percentage}%`;
-            }
-    
-            // Update the progress circles dynamically
-            updateCircle("activity-card", activity);
-            updateCircle("sleep-card", sleep);
-            updateCircle("wellness-card", wellness);
-    
-            // Health Monitoring Chart
-            const ctx = document.getElementById('healthChart').getContext('2d');
-            const healthData = {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'], // Example labels
-                datasets: [{
-                    label: 'Health Trend',
-                    data: healthTrend,
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#3498db'
-                }]
-            };
-            const options = {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { enabled: true }
-                },
-                scales: {
-                    y: { beginAtZero: false }
-                }
-            };
-            const healthChart = new Chart(ctx, {
-                type: 'line',
-                data: healthData,
-                options: options
-            });
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 
 </html>
