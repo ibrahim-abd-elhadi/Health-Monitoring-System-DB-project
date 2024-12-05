@@ -7,7 +7,6 @@
     <title>Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- إضافة رابط Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 
@@ -16,7 +15,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-header">
-                <h2>Menu</h2> <!-- تم تغيير كلمة Dashboard إلى Menu -->
+                <h2>Menu</h2>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="#" class="menu-item active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
@@ -24,7 +23,9 @@
                 <li>
                     <span><i class="fas fa-chart-line"></i> Analytics</span>
                     <ul>
-                        <li><a href="#" class="menu-item"><i class="fas fa-heartbeat"></i> Health Monitoring</a></li>
+                        <!-- هنا قم بتعديل الرابط ليأخذك إلى الملف مباشرة عبر الرابط المحلي -->
+                        <li><a href="file:///C:/Users/Jaguar/Desktop/doctor/medication.html" class="menu-item"><i
+                                    class="fas fa-heartbeat"></i> Health Monitoring</a></li>
                     </ul>
                 </li>
                 <li>
@@ -49,7 +50,6 @@
         <!-- Main Dashboard -->
         <main class="dashboard">
             <div class="main-content">
-                <!-- Cards Section -->
                 <section class="cards">
                     <div class="card activity" id="activity-card">
                         <h3>Activity</h3>
@@ -100,7 +100,6 @@
 
             <!-- Right Sidebar -->
             <div class="right-sidebar">
-                <!-- Statuses Section -->
                 <section class="statuses">
                     <h2>Statuses</h2>
                     <table>
@@ -135,7 +134,6 @@
                     </table>
                 </section>
 
-                <!-- Chat Section -->
                 <section class="chat">
                     <h2>Recent Chats</h2>
                     <ul class="chat-list">
@@ -144,11 +142,11 @@
                         <li data-message="You should follow the instructions...">James Grey</li>
                         <li data-message="Hi, I have a question about my cat.">Jim Brown</li>
                     </ul>
-                   
                 </section>
             </div>
         </main>
     </div>
+
     <script src="script.js"></script>
 </body>
 
