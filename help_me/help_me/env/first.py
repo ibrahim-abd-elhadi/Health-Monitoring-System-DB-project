@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, session
+from datetime import datetime
+from flask import Flask, logging, render_template, request, redirect, flash, url_for, session
 import mysql.connector
 
 # Database Connection Function
@@ -297,26 +298,83 @@ def settings():
     
     if request.method == 'POST':
         name = request.form['name']
-        age = request.form['age']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+        date_of_birth = request.form['date_of_birth']
+
+        # Validate passwords if provided
+        if password or confirm_password:
+            if password != confirm_password:
+                flash('Passwords do not match!', 'danger')
+                return redirect(url_for('settings'))
         
-        connection = create_connection()
-        cursor = connection.cursor()
-        query = "UPDATE users SET name = %s, age = %s WHERE user_id = %s"
-        cursor.execute(query, (name, age, user_id,))
-        connection.commit()
-        cursor.close()
-        connection.close()
+        try:
+            connection = create_connection()
+            cursor = connection.cursor()
+
+            if name:
+                query = "UPDATE users SET name = %s WHERE user_id = %s"
+                cursor.execute(query, (name, user_id))
+                connection.commit()
+
+            if email:
+                query = "UPDATE users SET email = %s WHERE user_id = %s"
+                cursor.execute(query, (email, user_id))
+                connection.commit()
+
+            if password:
+                query = "UPDATE users SET password = %s WHERE user_id = %s"
+                cursor.execute(query, (password, user_id))
+                connection.commit()
+
+            if date_of_birth:
+                query = "UPDATE users SET date_of_birth = %s WHERE user_id = %s"
+                cursor.execute(query, (date_of_birth, user_id))
+                connection.commit()
+            
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('patient_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating user: {e}")
+            flash('An error occurred while updating your profile. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
         
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('patient_profile'))
     
-    connection = create_connection()
-    cursor = connection.cursor()
-    query = "SELECT name, age, email FROM users WHERE user_id = %s"
-    cursor.execute(query, (user_id,))
-    name, age, email = cursor.fetchone()
-    cursor.close()
-    connection.close()
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = "SELECT name, email, date_of_birth FROM users WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        name, email, date_of_birth = cursor.fetchone()
+
+    except Exception as e:
+        logging.error(f"Error fetching user information: {e}")
+        flash('An error occurred while loading your profile settings.', 'danger')
+        return redirect(url_for('dashboard'))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+    
+    # Get today's date
+    today = datetime.today().date()
+
+    # Calculate the age
+    age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+
     
     return render_template('settings.html', name=name, email=email, age=age)
 
