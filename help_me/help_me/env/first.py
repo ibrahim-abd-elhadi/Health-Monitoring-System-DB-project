@@ -8,7 +8,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='Saher1234$',  # Update your MySQL password here
+            password='yY7$ls44',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -232,3 +232,71 @@ def index():
 # Run the application
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+
+@app.route("/patient_profile")
+def patient_profile():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+    
+    connection = create_connection()
+    cursor = connection.cursor()
+    query_last_user_id = "SELECT name, age FROM users WHERE user_id = %s"
+    
+    # Pass user_id as a tuple with a single element
+    cursor.execute(query_last_user_id, (user_id,))
+    data = cursor.fetchone()  # Fetch the single result
+    
+    cursor.close()
+    connection.close()
+    
+    if data is None:
+        flash('User not found!', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    # Assuming `data` is a tuple (name, age)
+    name, age = data
+    return render_template('patient_profile.html', name=name, age=age)
+
+
+
+@app.route("/settings", methods=['GET', 'POST'])
+def settings():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        name = request.form['name']
+        age = request.form['age']
+        
+        connection = create_connection()
+        cursor = connection.cursor()
+        query = "UPDATE users SET name = %s, age = %s WHERE user_id = %s"
+        cursor.execute(query, (name, age, user_id,))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('patient_profile'))
+    
+    connection = create_connection()
+    cursor = connection.cursor()
+    query = "SELECT name, age, email FROM users WHERE user_id = %s"
+    cursor.execute(query, (user_id,))
+    name, age, email = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    
+    return render_template('settings.html', name=name, email=email, age=age)
