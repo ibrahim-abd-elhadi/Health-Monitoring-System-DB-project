@@ -50,7 +50,8 @@ def login():
             return redirect(url_for('patient_details'))
         elif user[5].lower() == 'doctor':
             flash('Login successful!', 'success')
-            return redirect(url_for('index'))
+            session['user_id'] = user[0]  # Assuming `user[0]` is `user_id`
+            return redirect(url_for('patient_profile'))
         else:
             flash('Invalid user role.', 'error')
 
@@ -243,31 +244,47 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route("/patient_profile")
+@app.route("/patient_profile", methods=['GET', 'DELETE'])
 def patient_profile():
-    user_id = session.get('user_id', None)
-    if user_id is None:
+    doctor_id = session.get('user_id', None)
+    # return render_template("test.html", doctor_id=doctor_id)
+    if doctor_id is None:
         flash('User is not logged in!', 'danger')
         return redirect(url_for('login'))
     
+    
     connection = create_connection()
     cursor = connection.cursor()
-    query_last_user_id = "SELECT name, age FROM users WHERE user_id = %s"
+
+    if request.method == 'DELETE':
+        query = "DELETE FROM appointments WHERE patient_id = %s"
+        cursor.execute(query, (request.get_json().get('patient_id'),))
+        connection.commit()
+        return render_template("test.html")
     
-    # Pass user_id as a tuple with a single element
-    cursor.execute(query_last_user_id, (user_id,))
-    data = cursor.fetchone()  # Fetch the single result
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (doctor_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+
+    query_last_doctor_id = """ SELECT appointments.reason, appointments.status, appointments.date_time, users.name, users.user_id
+    FROM appointments LEFT JOIN users ON appointments.patient_id=users.user_id WHERE doctor_id = %s;"""
+    
+    # Pass doctor_id as a tuple with a single element
+    cursor.execute(query_last_doctor_id, (doctor_id,))
+    patients = cursor.fetchall()  # Fetch the single result
     
     cursor.close()
     connection.close()
     
-    if data is None:
+    if patients is None:
         flash('User not found!', 'warning')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('login'))
     
-    # Assuming `data` is a tuple (name, age)
-    name, age = data
-    return render_template('patient_profile.html', name=name, age=age)
+    return render_template('patient_profile.html', patients=patients)
 
 
 
@@ -302,3 +319,4 @@ def settings():
     connection.close()
     
     return render_template('settings.html', name=name, email=email, age=age)
+

@@ -46,7 +46,7 @@
                     </ul>
                 </li>
             </ul>
-            <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
+            <a class="logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
         </aside>
 
         <!-- Main Dashboard -->
@@ -206,6 +206,15 @@
                 data: healthData,
                 options: options
             });
+        });
+
+        
+        // logout button
+        const logoutButton = document.querySelector(".logout");
+        console.log(logoutButton)
+        logoutButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            window.location.href = "/logout";
         });
     </script>
 </body>
