@@ -23,6 +23,7 @@ app.secret_key = 'your_secret_key'  # Used for flash messages and session manage
 # Routes
 
 ## Login Page
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None

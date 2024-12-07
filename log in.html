@@ -1,11 +1,116 @@
-<!-- Page: login.html remains the same -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log in Page</title>
-    <link rel="stylesheet" href="log in.css">
+    <style>
+        /* General Body Styling */
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full viewport height */
+            background-color: #f4f4f9; /* Soft light gray background */
+            font-family: Arial, sans-serif;
+        }
+
+        /* Centering the Login Card */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .card {
+            background-color: #ffffff; /* White card background */
+            border-radius: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 20px 30px;
+            text-align: center;
+            width: 300px; /* Card width */
+        }
+
+        /* Card Title */
+        .card h2 {
+            color: #333333; /* Neutral dark gray for titles */
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            color: #333333; /* Neutral dark gray */
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            padding: 8px; /* Reduced padding */
+            font-size: 14px; /* Smaller font size */
+            border: 1px solid #cccccc; /* Light gray border */
+            border-radius: 5px; /* Subtle rounding */
+            background-color: #ffffff; /* White input field */
+            color: #333333; /* Neutral dark gray text */
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #4caf50; /* Green for focus */
+        }
+
+        /* Button Styling */
+        .submit-btn {
+            padding: 8px; /* Reduced padding */
+            font-size: 14px; /* Smaller font size */
+            color: #ffffff; /* White text */
+            background-color: #4caf50; /* Green button */
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background-color: #388e3c; /* Darker green for hover */
+        }
+
+        /* Sign Up Text Link */
+        .signup-text {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333333; /* Neutral dark gray */
+        }
+
+        .signup-text a {
+            color: #4caf50; /* Green for the link */
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .signup-text a:hover {
+            color: #388e3c; /* Darker green on hover */
+        }
+    </style>
 </head>
 <body>
     <div class="container">

@@ -5,6 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Profile</title>
     <link rel="stylesheet" href="Patient Profile.css">
+    <style>
+        /* General Body Styling */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f4f9; /* Light gray background */
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+/* Page Title */
+.title {
+    font-size: 2rem;
+    color: #000; /* Green color */
+    margin: 40px 0 20px;
+    text-align: center;
+}
+
+/* Container Styling */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 20px; /* Add padding for responsive design */
+}
+
+/* Form Container */
+.form-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
+    overflow: hidden; /* Prevent overflow */
+}
+
+/* Form Section Styling */
+.form-section {
+    width: 100%;
+    max-width: 800px; /* Max width to fit content in page */
+    background-color: #ffffff;
+    padding-top: 50px;
+    padding-left: 50px;
+    padding-right: 70px;
+    padding-bottom: 70px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+}
+
+/* Form Styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Form Group Styling */
+.form-group {
+    text-align: left;
+}
+
+/* Labels */
+label {
+    font-size: 14px;
+    color: #333333;
+    margin-bottom: 5px;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="date"],
+input[type="password"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+    border: 1px solid #cccccc; /* Light gray border */
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    outline: none;
+    transition: all 0.3s;
+}
+
+textarea {
+    resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #ff5722;
+    background-color: #ffffff;
+}
+
+/* Emergency Contact Styling */
+#emergency-container .emergency-row {
+    display: flex;
+    gap: 10px; /* Space between input and button */
+    align-items: center;
+    margin-bottom: 10px; /* Space between rows */
+}
+
+#emergency-container input {
+    width: 80%; /* Reduce input width */
+}
+
+.add-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #ffffff;
+    background-color: #ff5722; /* Green button */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-btn:hover {
+    background-color: #e64a19; /* Darker green */
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #ffffff;
+    background-color: #ff5722; /* Green button */
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #e64a19; /* Darker green */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 10px; /* Add smaller padding for mobile */
+    }
+
+    .form-section {
+        padding: 20px; /* Adjust padding on smaller screens */
+    }
+
+    #emergency-container .emergency-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+        </style>
 </head>
 <body>
     <div class="container">
