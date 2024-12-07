@@ -48,7 +48,7 @@ def login():
         elif user[5].lower() == 'patient':
             flash('Login successful!', 'success')
             session['user_id'] = user[0]  # Assuming `user[0]` is `user_id`
-            return redirect(url_for('index'))     #333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+            return redirect(url_for('patientpagedashboard'))     #333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
         elif user[5].lower() == 'doctor':
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
@@ -227,6 +227,34 @@ def patient_details():
 
 
 
+
+
+
+
+
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+##########################################################################################################################
+
+
+
 #--------------------------------------------------------------------------------------------------------------------#
 ## Home Page
 
@@ -241,6 +269,11 @@ def index():
 
     # Pass data to the HTML
     #return render_template('index.html', activity=activity, sleep=sleep, wellness=wellness, health_trend=health_trend)
+    user_id = session.get('user_id', None)
+    if not user_id:
+        # Redirect to login if user_id is not in session
+        return redirect('/login')
+    
     connection = create_connection()
     cursor = connection.cursor()
 
@@ -423,6 +456,127 @@ def index():
         #lowest_name=lowest_name,
         #moderate_name=moderate_name
     )
+
+
+
+
+
+
+#--------------------------------------------------------------------------------------------------------------------#
+
+# Queues for rolling data
+blood_sugar_queue = deque([70, 80, 75, 85, 80], maxlen=5)
+blood_pressure_queue = deque([70, 80, 75, 85, 80], maxlen=5)
+heart_rate_queue = deque([70, 80, 75, 85, 80], maxlen=5)
+activity_growth_queue = deque([65, 59, 80, 81, 56, 55, 90, 60, 85, 90, 75, 95], maxlen=12)
+
+@app.route('/patientpagedashboard')
+def patientpagedashboard():
+# Get user_id from session
+    user_id = session.get('user_id', None)
+    if not user_id:
+        # Redirect to login if user_id is not in session
+        return redirect('/login')
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Query to fetch height and weight for the given patient_id
+        cursor.execute("""
+            SELECT height, weight 
+            FROM patients 
+            WHERE patient_id = %s
+        """, (user_id,))
+        result = cursor.fetchone()
+
+        # Explicitly consume the cursor to avoid issues
+        cursor.fetchall()
+
+        if not result:
+            # Handle case where no patient is found
+            return render_template('error.html', message="Patient not found")
+
+        height, weight = result
+
+        # Calculate BMI
+        bmi = weight / ((height / 100) ** 2)  # Convert height to meters
+        bmi = f"{bmi:.1f}"  # Format BMI to 1 decimal place
+
+        # Calculate BMI percentage
+        ideal_bmi = 22  # Assuming 22 is the ideal BMI
+        bmi_percentage = max(0, 100 - abs((float(bmi) - ideal_bmi) / ideal_bmi) * 100)
+
+        # Determine health status
+        if 18.5 <= float(bmi) <= 24.9:
+            health_status = "You're healthy"
+        else:
+            health_status = "Cautious"
+
+        # Query to fetch additional health metrics
+        cursor.execute("""
+            SELECT blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness 
+            FROM health_metrics 
+            WHERE patient_id = %s
+        """, (user_id,))
+        health_metrics = cursor.fetchone()
+
+        # Explicitly consume the cursor to avoid issues
+        cursor.fetchall()
+
+
+        if not health_metrics:
+            # Handle case where no health metrics are found
+            return render_template('error.html', message="Health metrics not found")
+
+        # Unpack health metrics
+        blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness = health_metrics
+
+        # Update the queues for blood sugar, blood pressure, and heart rate
+        blood_sugar_queue.append(blood_sugar)
+        blood_pressure_queue.append(blood_pressure)
+        heart_rate_queue.append(heart_rate)
+
+        # Map activity_level, sleep_quality, and wellness to numeric values
+        activity_level_mapping = {"High": 3, "Medium": 2, "Low": 1}
+        sleep_quality_mapping = {"Good": 3, "Average": 2, "Poor": 1}
+        wellness_mapping = {"Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1}
+
+        # Get numeric values for the metrics
+        activity_value = activity_level_mapping.get(activity_level, 0)
+        sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
+        wellness_value = wellness_mapping.get(wellness, 0)
+
+        # Calculate average and append to the queue
+        activity_growth_average = int((activity_value + sleep_value + wellness_value)*10 / 3)
+        activity_growth_queue.append(activity_growth_average)
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    # Render the HTML template with dynamic data
+    return render_template(
+        'patientpage.html',
+        height=height,
+        weight=weight,
+        bmi=bmi,
+        bmi_percentage=bmi_percentage,
+        health_status=health_status,
+        blood_pressure=blood_pressure,
+        heart_rate=heart_rate,
+        blood_sugar=blood_sugar,
+        activity_level=activity_level,
+        sleep_quality=sleep_quality,
+        wellness=wellness,
+        blood_sugar_list=list(blood_sugar_queue),  # Pass blood sugar queue as a list
+        blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
+        heart_rate_list=list(heart_rate_queue),  # Pass heart rate queue as a list
+        activity_growth_list=list(activity_growth_queue)  # Pass activity growth queue as a list
+    )
+
+
+
 
 
 # Run the application
