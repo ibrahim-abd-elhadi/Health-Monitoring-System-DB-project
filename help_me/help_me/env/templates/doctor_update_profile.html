@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Doctor Profile</title>
+    <title>{{ title | default('Update Doctor Profile') }}</title>
     <style>
         /* General Body Styling */
         body {
@@ -204,33 +204,34 @@
         <div class="form-container">
             <!-- Left Side: Photo Upload -->
             <div class="photo-section">
-                <form id="photo-form">
-                    <h2>Upload Photo</h2>
+                <form id="photo-form" method="POST" enctype="multipart/form-data" action="{{ url_for('update_doctor_profile') }}">
+                    <h2>{{ 'Upload Photo' }}</h2>
                     <div class="photo-group">
-                        <label for="photo">Patient Photo:</label>
+                        <label for="photo">{{ 'Doctor Photo:' }}</label>
                         <input type="file" id="photo" name="photo" accept="image/*" required>
-                        <p class="photo-instruction">Allowed formats: JPG, PNG</p>
+                        <p class="photo-instruction">{{ 'Allowed formats: JPG, PNG' }}</p>
                     </div>
-                    <a href="change-password_doctor.html" class="change-password-btn">Change Password</a>
+                    <button type="submit" class="submit-btn">{{ 'Update Profile Picture' }}</button>
+                    <a href="{{ url_for('change_password_doctor') }}" class="change-password-btn">{{ 'Change Password' }}</a>
                 </form>
             </div>
 
             <!-- Right Side: Form -->
             <div class="form-section">
-                <form id="doctor-form">
+                <form id="doctor-form" method="POST" action="{{ url_for('update_doctor_profile') }}">
                     <div class="form-group">
-                        <label for="doctor-name">Full Name:</label>
-                        <input type="text" id="doctor-name" name="doctor-name" placeholder="Enter full name" required>
+                        <label for="doctor-name">{{ 'Full Name:' }}</label>
+                        <input type="text" id="doctor-name" name="doctor_name" placeholder="{{ 'Enter full name' }}" required value="{{ name | default('') }}">
                     </div>
                     <div class="form-group">
-                        <label for="phone">Phone Number:</label>
-                        <input type="text" id="phone" name="phone" placeholder="Enter phone number" required>
+                        <label for="phone">{{ 'Phone Number:' }}</label>
+                        <input type="text" id="phone" name="phone" placeholder="{{ 'Enter phone number' }}" required value="{{ phone | default('') }}">
                     </div>
                     <div class="form-group">
-                        <label for="hospital-affiliation">Hospital Affiliation:</label>
-                        <input type="text" id="hospital-affiliation" name="hospital-affiliation" placeholder="Enter Hospital Affiliation" required>
+                        <label for="hospital-affiliation">{{ 'Hospital Affiliation:' }}</label>
+                        <input type="text" id="hospital-affiliation" name="hospital_affiliation" placeholder="{{ 'Enter Hospital Affiliation' }}" required value="{{ hospital_affiliation | default('') }}">
                     </div>
-                    <button type="submit" class="submit-btn">Update Profile</button>
+                    <button type="submit" class="submit-btn">{{ 'Update Profile' }}</button>
                 </form>
             </div>
         </div>

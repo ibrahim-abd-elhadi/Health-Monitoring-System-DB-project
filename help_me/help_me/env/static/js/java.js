@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+
+
     // 3. Enable dragging for patient cards container
     const patientCardsContainer = document.getElementById('patient-cards-container');
     let isDragging = false;

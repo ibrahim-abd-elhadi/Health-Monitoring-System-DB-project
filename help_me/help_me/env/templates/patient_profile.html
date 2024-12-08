@@ -299,7 +299,7 @@
             <ul class="patient-cards">
                 {% for patient in patients %}
                 <li class="patient-card">
-                    <img src="{{ url_for('static', filename='images/download.jpg') }}" alt="{{ patient[3] }}">
+                    <img src="{{ url_for('static', filename='uploads/' + patient[5]) }}" alt="{{ patient[3] }}">
                     <div class="patient-info" data-patient-id="{{ patient[4] }}">
                         <strong>{{ patient[3] }}</strong>
                         <p>Status: {{ patient[1] }}</p>

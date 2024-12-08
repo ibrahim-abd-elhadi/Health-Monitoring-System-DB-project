@@ -1,6 +1,7 @@
 from datetime import datetime
-from flask import Flask, logging, render_template, request, redirect, flash, url_for, session
+from flask import Flask, render_template, request, redirect, flash, url_for, session
 import mysql.connector
+import logging
 
 # Database Connection Function
 def create_connection():
@@ -257,21 +258,24 @@ def patient_profile():
     connection = create_connection()
     cursor = connection.cursor()
 
-    if request.method == 'DELETE':
-        query = "DELETE FROM appointments WHERE patient_id = %s"
-        cursor.execute(query, (request.get_json().get('patient_id'),))
-        connection.commit()
-        return render_template("test.html")
-    
+
     # check if user exists and is a doctor
     query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
     cursor.execute(query, (doctor_id,))
     if cursor.fetchone() is None:
         flash('Access denied!', 'warning')
         return redirect(url_for('login'))
+
+    if request.method == 'DELETE':
+        query = "DELETE FROM appointments WHERE patient_id = %s"
+        cursor.execute(query, (request.get_json().get('patient_id'),))
+        connection.commit()
+        return redirect(url_for('patient_profile'))
+    
     
 
-    query_last_doctor_id = """ SELECT appointments.reason, appointments.status, appointments.date_time, users.name, users.user_id
+    query_last_doctor_id = """ SELECT appointments.reason, appointments.status,
+    appointments.date_time, users.name, users.user_id, users.profile_picture
     FROM appointments LEFT JOIN users ON appointments.patient_id=users.user_id WHERE doctor_id = %s;"""
     
     # Pass doctor_id as a tuple with a single element
@@ -289,52 +293,66 @@ def patient_profile():
 
 
 
-@app.route("/settings", methods=['GET', 'POST'])
-def settings():
+@app.route("/update_patient_profile", methods=['GET', 'POST'])
+def update_patient_profile():
     user_id = session.get('user_id', None)
     if user_id is None:
         flash('User is not logged in!', 'danger')
         return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a patient
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'patient'"
+    cursor.execute(query, (user_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
     
     if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        date_of_birth = request.form['date_of_birth']
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename != '':
+                # Save the file or process it
+                photo_name = photo.filename  # Example path
+                photo.save(f"static/uploads/{photo_name}")
+                query = "UPDATE users SET profile_picture = %s WHERE user_id = %s"
+                cursor.execute(query, (photo_name, user_id))
+                connection.commit()
+        else:
+            name = request.form['name']
+            phone = request.form['phone']
+            weight = request.form['weight']
+            chronic_conditions = request.form['chronic_conditions']
 
-        # Validate passwords if provided
-        if password or confirm_password:
-            if password != confirm_password:
-                flash('Passwords do not match!', 'danger')
-                return redirect(url_for('settings'))
         
         try:
-            connection = create_connection()
-            cursor = connection.cursor()
 
             if name:
                 query = "UPDATE users SET name = %s WHERE user_id = %s"
                 cursor.execute(query, (name, user_id))
                 connection.commit()
 
-            if email:
-                query = "UPDATE users SET email = %s WHERE user_id = %s"
-                cursor.execute(query, (email, user_id))
+            if phone:
+                query = "UPDATE users SET phone = %s WHERE user_id = %s"
+                cursor.execute(query, (phone, user_id))
                 connection.commit()
 
-            if password:
-                query = "UPDATE users SET password = %s WHERE user_id = %s"
-                cursor.execute(query, (password, user_id))
+            if weight:
+                query = "UPDATE patients SET weight = %s WHERE patient_id = %s"
+                cursor.execute(query, (weight, user_id))
                 connection.commit()
 
-            if date_of_birth:
-                query = "UPDATE users SET date_of_birth = %s WHERE user_id = %s"
-                cursor.execute(query, (date_of_birth, user_id))
+            if chronic_conditions:
+                query = "UPDATE patients SET chronic_conditions = %s WHERE patient_id = %s"
+                cursor.execute(query, (chronic_conditions, user_id))
                 connection.commit()
-            
+
+
             flash('Profile updated successfully!', 'success')
-            return redirect(url_for('patient_profile'))
+            return redirect(url_for('update_patient_profile'))
 
         except Exception as e:
             logging.error(f"Error updating user: {e}")
@@ -345,22 +363,24 @@ def settings():
                 cursor.close()
             if connection:
                 connection.close()
-        
-        flash('Profile updated successfully!', 'success')
-        return redirect(url_for('patient_profile'))
+            flash('Profile updated successfully!', 'success')
     
+
     try:
         connection = create_connection()
         cursor = connection.cursor()
 
-        query = "SELECT name, email, date_of_birth FROM users WHERE user_id = %s"
+        query = "SELECT name, phone FROM users WHERE user_id = %s"
         cursor.execute(query, (user_id,))
-        name, email, date_of_birth = cursor.fetchone()
+        name, phone = cursor.fetchone()
+        query = "SELECT weight, chronic_conditions FROM patients WHERE patient_id = %s"
+        cursor.execute(query, (user_id,))
+        weight, chronic_conditions = cursor.fetchone()
 
     except Exception as e:
         logging.error(f"Error fetching user information: {e}")
         flash('An error occurred while loading your profile settings.', 'danger')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('update_doctor_profile'))
 
     finally:
         if cursor:
@@ -369,12 +389,208 @@ def settings():
             connection.close()
 
     
-    # Get today's date
-    today = datetime.today().date()
+    return render_template('patient_update_profile.html', name=name, phone=phone, weight=weight, chronic_conditions=chronic_conditions)
 
-    # Calculate the age
-    age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+@app.route("/update_doctor_profile", methods=['GET', 'POST'])
+def update_doctor_profile():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (user_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename != '':
+                # Save the file or process it
+                photo_name = photo.filename  # Example path
+                photo.save(f"static/uploads/{photo_name}")
+                query = "UPDATE users SET profile_picture = %s WHERE user_id = %s"
+                cursor.execute(query, (photo_name, user_id))
+                connection.commit()
+        else:
+            name = request.form['doctor_name']
+            phone = request.form['phone']
+            hospital_affiliation = request.form['hospital_affiliation']
+
+        
+        try:
+
+            if name:
+                query = "UPDATE users SET name = %s WHERE user_id = %s"
+                cursor.execute(query, (name, user_id))
+                connection.commit()
+
+            if phone:
+                query = "UPDATE users SET phone = %s WHERE user_id = %s"
+                cursor.execute(query, (phone, user_id))
+                connection.commit()
+
+            if hospital_affiliation:
+                query = "UPDATE doctors SET hospital_affiliation = %s WHERE doctor_id = %s"
+                cursor.execute(query, (hospital_affiliation, user_id))
+                connection.commit()
+
+
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('update_doctor_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating user: {e}")
+            flash('An error occurred while updating your profile. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+            flash('Profile updated successfully!', 'success')
+    
+
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = "SELECT name, phone FROM users WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        name, phone = cursor.fetchone()
+        query = "SELECT hospital_affiliation FROM doctors WHERE doctor_id = %s"
+        cursor.execute(query, (user_id,))
+        hospital_affiliation = cursor.fetchone()[0]
+
+    except Exception as e:
+        logging.error(f"Error fetching user information: {e}")
+        flash('An error occurred while loading your profile settings.', 'danger')
+        return redirect(url_for('update_doctor_profile'))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
     
-    return render_template('settings.html', name=name, email=email, age=age)
+    return render_template('doctor_update_profile.html', name=name, phone=phone, hospital_affiliation=hospital_affiliation)
 
+
+
+
+@app.route("/change_password_patient", methods=['GET', 'POST']) 
+def change_password_patient():
+
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a patient
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'patient'"
+    cursor.execute(query, (user_id,))
+    
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        current_password = request.form['current-password']
+        new_password = request.form['new-password']
+        confirm_new_password = request.form['confirm-new-password']
+
+        if new_password != confirm_new_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('change_password_patient'))
+
+        try:
+            query = "SELECT * FROM users WHERE user_id = %s AND password = %s"
+            cursor.execute(query, (user_id, current_password))
+            if cursor.fetchone() is None:
+                flash('Old password is incorrect!', 'danger')
+                return redirect(url_for('change_password_patient'))
+
+            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            cursor.execute(query, (new_password, user_id))
+            connection.commit()
+            flash('Password updated successfully!', 'success')
+            return redirect(url_for('which'))
+
+        except Exception as e:
+            logging.error(f"Error updating password: {e}")
+            flash('An error occurred while updating your password. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    return render_template('change_password_patient.html')
+
+
+@app.route("/change_password_doctor", methods=['GET', 'POST']) 
+def change_password_doctor():
+
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (user_id,))
+    
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        current_password = request.form['current-password']
+        new_password = request.form['new-password']
+        confirm_new_password = request.form['confirm-new-password']
+
+        if new_password != confirm_new_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('change_password_doctor'))
+
+        try:
+            query = "SELECT * FROM users WHERE user_id = %s AND password = %s"
+            cursor.execute(query, (user_id, current_password))
+            if cursor.fetchone() is None:
+                flash('Old password is incorrect!', 'danger')
+                return redirect(url_for('change_password_doctor'))
+
+            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            cursor.execute(query, (new_password, user_id))
+            connection.commit()
+            flash('Password updated successfully!', 'success')
+            return redirect(url_for('patient_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating password: {e}")
+            flash('An error occurred while updating your password. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    return render_template('change_password_doctor.html')
