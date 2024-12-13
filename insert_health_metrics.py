@@ -7,25 +7,25 @@ def insert_health_metrics(patient_id, connection):
     cursor = connection.cursor()
 
     # Generate random values for health metrics
-    heart_rate = random.randint(60, 100)  # Random heart rate
+    heart_rate = random.randint(60, 150)  # Random heart rate
     blood_pressure = f"{random.randint(110, 130)}/{random.randint(70, 90)}"  # Random blood pressure
-    blood_sugar = round(random.uniform(70, 140), 2)  # Random blood sugar (mg/dL)
+    blood_sugar = round(random.uniform(70, 500), 2)  # Random blood sugar (mg/dL)
     activity_level = random.choice(['Low', 'Medium', 'High'])
     sleep_quality = random.choice(['Good', 'Average', 'Poor'])
-    wellness = random.choice(['Excellent', 'Good', 'Fair', 'Poor'])
+    
 
     # Prepare the SQL query
     query = """
         INSERT INTO Health_Metrics 
-        (patient_id, heart_rate, blood_pressure, blood_sugar, activity_level, sleep_quality, wellness, date_time)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        (patient_id, heart_rate, blood_pressure, blood_sugar, activity_level, sleep_quality,  date_time)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
 
     # Current time
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     # Data to insert
-    data = (patient_id, heart_rate, blood_pressure, blood_sugar, activity_level, sleep_quality, wellness, current_time)
+    data = (patient_id, heart_rate, blood_pressure, blood_sugar, activity_level, sleep_quality, current_time)
 
     try:
         
