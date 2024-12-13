@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow: hidden;
+            /* Prevent vertical scrolling */
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+            /* Prevent vertical scrolling */
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            background-color: #2d3b42;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            position: fixed;
+            /* Fix the sidebar in place */
+        }
+
+        .sidebar-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #ecf0f1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 18px;
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            margin: 8px 0;
+            border-radius: 6px;
+            transition: background-color 0.3s, padding-left 0.3s;
+        }
+
+        .menu-item i {
+            margin-right: 12px;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background-color: #16a085;
+            padding-left: 30px;
+        }
+
+        .logout {
+            margin-top: auto;
+            text-decoration: none;
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 280px;
+            /* Increase the margin to create a small space between sidebar and cards */
+            height: 100vh;
+            overflow-y: auto;
+            /* Enable vertical scrolling only for content */
+        }
+
+        /* Profile Cards Styling */
+        .profile-header {
+            display: flex;
+            gap: 20px;
+            padding-bottom: 20px;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            padding: 10px 0;
+            width: 100%;
+        }
+
+        .profile-card {
+            flex: 0 0 auto;
+            min-width: 250px;
+            border-radius: 10px;
+            background: #fff;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            scroll-snap-align: center;
+        }
+
+        .profile-card:hover {
+            border: 2px solid #16a085;
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-card.active {
+            border: 2px solid #16a085;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Form Styling */
+        .form-container {
+            width: 50%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-container input,
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-container input:focus,
+        .form-container textarea:focus {
+            outline: none;
+            border-color: #16a085;
+            box-shadow: 0 0 5px rgba(22, 160, 133, 0.5);
+        }
+
+        .form-container .submit-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .form-container button {
+            background-color: #16a085;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .form-container button:hover {
+            background-color: #13876e;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Menu</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <!-- Updated link to go to local file -->
+                <li><a href="{{ url_for('which') }}" class="menu-item" id="dashboard-link">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="#" class="menu-item" id="patient-profile-link"><i class="fas fa-user"></i> Patient
+                        Profile</a></li>
+                <li>
+                    <span><i class="fas fa-chart-line"></i> Analytics</span>
+                    <ul>
+                        <!-- Updated link to Health Monitoring -->
+                        <li><a href="{{ url_for('which') }}" class="menu-item active">
+                                <i class="fas fa-heartbeat"></i> Health Monitoring</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span><i class="fas fa-calendar-alt"></i> Schedule</span>
+                    <ul>
+                        <li><a href="#" class="menu-item"><i class="fas fa-comments"></i> Chat</a></li>
+                        <li><a href="#" class="menu-item"><i class="fas fa-calendar-check"></i> Appointments</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <span><i class="fas fa-question-circle"></i> Help</span>
+                    <ul>
+                        <li><a href="#" class="menu-item"><i class="fas fa-cogs"></i> Settings</a></li>
+                        <li><a href="#" class="menu-item"><i class="fas fa-book"></i> Documentation</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <a href="{{ url_for('logout') }}" class="logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Profile Cards -->
+            <div class="profile-header">
+                {% for patient in patients %}
+                <div class="profile-card {% if loop.index == 1 %}active{% endif %}" data_patient_id="{{ patient[0] }}">
+                    <h3>{{ patient[1] }}</h3>
+                    <p>Age: {{ age }}</p>
+                    <p>Medical condition: {{ patient[3] }}</p>
+                    <p>Appointment: {{ patient[4] }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Medication Form -->
+            <div class="form-container">
+                <form data-patient-id='0'>
+                    <input type="text" name="medication_name" id="medication_name" placeholder="Medication name" required>
+                    <input type="text" name="dosage" id='dosage' placeholder="Dosage" required>
+                    <input type="date" name="start_date" id="start_date" placeholder="Start Date" required>
+                    <input type="date" name="end_date" id="end_date"placeholder="End Date" required>
+                    <textarea name="instructions" id="instructions" placeholder="Instructions" required></textarea>
+                    <!-- حاوية الزر هنا -->
+                    <div class="submit-container">
+                        <button type="submit" id="submit-btn">Submit</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const submit = document.querySelector("#submit-btn");
+            const cards = document.querySelectorAll('.profile-card');
+            const form = document.querySelector("form")
+            const medication_name = document.querySelector('#medication_name')
+
+            console.log(medication_name)
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    cards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    const patientId = card.getAttribute('data_patient_id');
+                    form.setAttribute('data-patient-id', patientId);
+                    event.preventDefault();
+                });
+            });
+
+            submit.addEventListener('click', async (event) => {
+                event.preventDefault();
+                    const patientID = form.getAttribute('data-patient-id')
+                    console.log(patientID)
+                    await fetch('http://127.0.0.1:5000/add-medication', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    method: 'POST',
+                    body: JSON.stringify({
+                        patient_id: patientID,
+                        medication_name: document.querySelector('#medication_name').value,
+                        start_date: document.querySelector('#start_date').value,
+                        end_date: document.querySelector('#end_date').value,
+                        instructions: document.querySelector('#instructions').value,
+                        dosage: document.querySelector('#dosage').value,
+
+                    })
+                })
+            })
+        });
+    </script>
+</body>
+
+</html>
