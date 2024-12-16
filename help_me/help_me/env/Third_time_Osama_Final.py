@@ -383,13 +383,15 @@ def index():
         health_trend_queue.append(new_health_trend)
         print(health_trend_queue)
         
+
+
         #Not WOrking properly For Some reason _+__+_=-=-=-=-=-----------=0=-=90p-0980-0-0-0-0-0-0-0-0-0-0-80-80-80
         
         # # Query 1: Get patient_id with highest health metrics
         # cursor.execute("""
         #     SELECT patient_id 
         #     FROM health_metrics
-        #     ORDER BY (heart_rate + blood_Sugar + blood_pressure) DESC 
+        #     ORDER BY (heart_rate + blood_Sugar) DESC 
         #     LIMIT 1;
         # """)
         # highest_patient_id = cursor.fetchone()
@@ -404,7 +406,7 @@ def index():
         # cursor.execute("""
         #     SELECT patient_id 
         #     FROM health_metrics
-        #     ORDER BY (heart_rate + blood_Sugar + blood_pressure) ASC 
+        #     ORDER BY (heart_rate + blood_Sugar) ASC 
         #     LIMIT 1;
         # """)
         # lowest_patient_id = cursor.fetchone()
@@ -421,7 +423,6 @@ def index():
         #     FROM health_metrics
         #     WHERE heart_rate < 160 
         #     AND blood_Sugar < 200 
-        #     AND blood_pressure < 300
         #     LIMIT 1;
         # """)
         # moderate_patient_id = cursor.fetchone()
@@ -434,9 +435,9 @@ def index():
 
 
 
-        #print(highest_name)
-        #print(lowest_name)
-        #print(moderate_name)
+        # print(highest_name)
+        # print(lowest_name)
+        # print(moderate_name)
 
 
 
