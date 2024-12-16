@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='yY7$ls44',  # Update your MySQL password here
+            password='AQI.ib1235879',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -81,7 +81,7 @@ def doctor_profile_signup():
         confirm_password = request.form['confirm-password']
         phone = request.form.get('phone', '')
         gender = request.form.get('gender')
-        age = request.form.get('age', 0)
+        date_of_birth = request.form.get('date_of_birth')
         role = 'doctor'
 
         if password != confirm_password:
@@ -99,21 +99,19 @@ def doctor_profile_signup():
             return redirect(url_for('login'))
 
         query = """
-            INSERT INTO users (name, email, password, phone, role, gender, age)
+            INSERT INTO users (name, email, password, phone, role, gender, date_of_birth)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (user_name, email, password, phone, role, gender, age))
+        cursor.execute(query, (user_name, email, password, phone, role, gender, date_of_birth))
 
         connection.commit()
         cursor.close()
         connection.close()
         flash('Account created successfully!', 'success')
-        return redirect(url_for('login'))                 #3333333333333333333333333333333333333333333
+        return redirect(url_for('login'))
 
     return render_template('doctor_profile_signup.html')
 
-
-#------------------------------------------------------------------------------------------------------------------------------
 ## Patient Profile Signup
 @app.route('/patient_profile_signup', methods=['GET', 'POST'])
 def patient_profile_signup():
@@ -124,7 +122,7 @@ def patient_profile_signup():
         confirm_password = request.form['confirm-password']
         phone = request.form.get('phone', '')
         gender = request.form.get('gender')
-        age = request.form.get('age', 0)
+        date_of_birth = request.form.get('date_of_birth')
         role = 'patient'
 
         if password != confirm_password:
@@ -142,12 +140,12 @@ def patient_profile_signup():
             return redirect(url_for('login'))
 
         query = """
-            INSERT INTO users (name, email, password, phone, role, gender, age)
+            INSERT INTO users (name, email, password, phone, role, gender, date_of_birth)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
 
-        cursor.execute(query, (user_name, email, password, phone, role, gender, age))
+        cursor.execute(query, (user_name, email, password, phone, role, gender, date_of_birth))
 
         user_id = cursor.lastrowid
         session['user_id'] = user_id  # Save user ID in session
@@ -173,9 +171,10 @@ def patient_details():
     if request.method == 'POST':
         height = float(request.form['height'])
         weight = float(request.form['weight'])
-        health_history = request.form.get('health-history', '')
-        emergency_contacts = request.form.getlist('emergency-contact')
-        emergency_contacts_str = ','.join(emergency_contacts)
+        blood_type = request.form['blood_type']
+        chronic_conditions = request.form.get('chronic_conditions', '')
+        emergency_contact = request.form.get('emergency_contact', '')
+        
 
         connection = create_connection()
         cursor = connection.cursor()
@@ -204,7 +203,7 @@ def patient_details():
                     VALUES (%s, %s, %s, %s, %s, %s)
                     """
                 # استبدل القيم المناسبة هنا
-                patient_data = (user_id, height, weight, '+a', 'None', emergency_contacts_str)
+                patient_data = (user_id, height, weight, blood_type, chronic_conditions, emergency_contact)
 
                 cursor.execute(query_insert_patient, patient_data)
                 connection.commit()  # حفظ التغييرات في قاعدة البيانات
@@ -227,6 +226,9 @@ def patient_details():
         return redirect(url_for('login'))
 
     return render_template('patient_details.html', user_id=user_id)
+
+
+
 
 
 
