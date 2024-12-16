@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='admin',  # Update your MySQL password here
+            password='yY7$ls44',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -874,7 +874,7 @@ def change_password_patient():
             cursor.execute(query, (new_password, user_id))
             connection.commit()
             flash('Password updated successfully!', 'success')
-            return redirect(url_for('which'))
+            return redirect(url_for('patientpagedashboard'))
 
         except Exception as e:
             logging.error(f"Error updating password: {e}")
@@ -1053,7 +1053,7 @@ def view_appointments():
 
     except Exception as e:
         flash(f"An error occurred while fetching your appointment: {str(e)}", 'danger')
-        return redirect(url_for('which'))  # Redirect to a safer place in case of error
+        return redirect(url_for('patientpagedashboard'))  # Redirect to a safer place in case of error
 
     finally:
         # Close the database connection safely

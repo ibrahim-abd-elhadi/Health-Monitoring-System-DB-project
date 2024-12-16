@@ -229,7 +229,7 @@
         //هنا هضيف الملف إللي ياخد من date
         const appointment = {{ appointment_dict | tojson }};
 
-        console.log(appointments);
+        console.log(appointment);
         function updateSidebar(date) {
             const appointment = appointments[date];
             document.getElementById('date').value = date || '';
