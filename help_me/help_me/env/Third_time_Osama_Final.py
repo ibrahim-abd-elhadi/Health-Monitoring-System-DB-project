@@ -108,9 +108,58 @@ def doctor_profile_signup():
         cursor.close()
         connection.close()
         flash('Account created successfully!', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('Doctor_Profile'))
 
     return render_template('doctor_profile_signup.html')
+
+
+## Doctor Profile Signup details
+@app.route('/Doctor_Profile', methods=['GET', 'POST'])
+def Doctor_Profile():
+    user_id = session.get('user_id', None)
+
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        # استخراج البيانات من الفورم
+        specialization = request.form['specialization']
+        license_number = request.form['license_number']
+        hospital_affiliations = request.form.getlist('hospital-affiliation')
+        hospitals_str = ','.join(hospital_affiliations)
+
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        # الخطوة 1: الحصول على آخر user_id من جدول users
+        query_last_user_id = "SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1"
+
+        try:
+            
+            cursor.execute(query_last_user_id)
+            last_user_id = cursor.fetchone()
+
+            if last_user_id:
+                user_id = last_user_id[0]
+                # إدخال البيانات في قاعدة البيانات
+                query = """
+                    INSERT INTO doctors (doctor_id, specialization, license_number, hospital_affiliation)
+                    VALUES (%s, %s, %s, %s)
+                """
+                cursor.execute(query, (user_id, specialization, license_number, hospitals_str))
+                connection.commit()
+                flash("Doctor profile saved successfully!", "success")
+            else:
+                flash("No users found in the database.")
+            return redirect(url_for('login'))  # إعادة التوجيه إلى صفحة تسجيل الدخول
+        except Exception as e:
+            flash(f"An error occurred: {e}", "danger")
+        finally:
+            cursor.close()
+            connection.close()
+
+    return render_template('Doctor_Profile.html', user_id=user_id)
 
 ## Patient Profile Signup
 @app.route('/patient_profile_signup', methods=['GET', 'POST'])

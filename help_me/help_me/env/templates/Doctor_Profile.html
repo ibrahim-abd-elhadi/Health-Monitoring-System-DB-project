@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Doctor_Profile.css') }}">
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="title">Doctor Profile</h1>
+        <div class="form-container">
+            <div class="form-section">
+                <form id="doctor-form" method="POST" action="{{ url_for('Doctor_Profile') }}">
+                    <div class="form-group">
+                        <label for="specialization">Specialization</label>
+                        <input type="text" id="specialization" name="specialization" placeholder="Enter specialization">
+                    </div>
+                    <div class="form-group">
+                        <label for="license-number">License Number</label>
+                        <input type="text" id="license-number" name="license_number" placeholder="Enter license number">
+                    </div>
+                    <div class="form-group">
+                        <label for="hospital-affiliation">Hospital Affiliation</label>
+
+                        <input type="text" id="hospital-affiliation" name="hospital-affiliation"
+                            placeholder="Enter hospital affiliation">
+                    </div>
+                    <button type="submit" class="submit-btn">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Functionality to dynamically add hospital affiliation fields
+        document.getElementById('hospital-container').addEventListener('click', function (event) {
+            if (event.target.classList.contains('add-btn')) {
+                const hospitalRow = event.target.closest('.hospital-row');
+                const newRow = document.createElement('div');
+                newRow.classList.add('hospital-row');
+
+                const newInput = document.createElement('input');
+                newInput.type = 'text';
+                newInput.name = 'hospital-affiliation';
+                newInput.placeholder = 'Enter hospital affiliation';
+
+                const newButton = document.createElement('button');
+                newButton.type = 'button';
+                newButton.classList.add('add-btn');
+                newButton.textContent = '+ Add';
+
+                newRow.appendChild(newInput);
+                newRow.appendChild(newButton);
+                document.getElementById('hospital-container').appendChild(newRow);
+
+                // Remove the add button from the previous row
+                hospitalRow.querySelector('.add-btn').remove();
+            }
+        });
+
+        // Form validation before submission
+        document.getElementById('doctor-form').addEventListener('submit', function (event) {
+            const specialization = document.getElementById('specialization').value;
+            const licenseNumber = document.getElementById('license-number').value;
+            const hospitalAffiliations = document.querySelectorAll('[name="hospital-affiliation"]');
+
+            // Check if fields are empty
+            if (!specialization || !licenseNumber || Array.from(hospitalAffiliations).some(input => input.value === "")) {
+                alert("Please fill out all fields before submitting.");
+                event.preventDefault(); // Stop form submission
+            }
+        });
+    </script>
+
+</body>
+
+</html>
