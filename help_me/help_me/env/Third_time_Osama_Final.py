@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='admin',  # Update your MySQL password here
+            password='yY7$ls44',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -999,7 +999,7 @@ def set_appointment():
             # Combine and validate date and time into a `datetime` object
             date_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
 
-            email_query = "SELECT user_id FROM users WHERE email = %s AND role = 'Patient'"
+            email_query = "SELECT user_id FROM users WHERE email = %s AND role = 'patient'"
             cursor.execute(email_query, (email,))
             result = cursor.fetchone()
             
@@ -1067,7 +1067,7 @@ def view_appointments():
         appointment = cursor.fetchone()
 
         # Extract data from the appointment and format it
-        date = appointment[1].strftime('%m/%d/%Y') if appointment[1] else None
+        date = appointment[1].strftime('%Y-%m-%d') if appointment[1] else None
         time = appointment[1].strftime('%I:%M %p') if appointment[1] else None
         reason = appointment[2]
 

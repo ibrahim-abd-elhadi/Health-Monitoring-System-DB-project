@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appointment of Patient</title>
+    <title>Health Overview Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* General Reset */
@@ -58,16 +58,6 @@
             align-items: center;
             justify-content: center;
             transform: scale(1.2);
-        }
-
-        .sidebar a.active {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            width: 60px;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .sidebar a i {
@@ -189,11 +179,17 @@
     <div class="dashboard">
         <!-- Left Sidebar -->
         <div class="sidebar">
+            <br>
             <a href="index.html" class="home-icon" title="Home"><i class="fa fa-home"></i></a>
-            <a href="calendar.html" id="calendarLink" title="Calendar" class="active"><i class="fa fa-calendar"></i></a>
+            <br>
+            <a href="calendar.html" title="Calendar"><i class="fa fa-calendar"></i></a>
+            <br>
             <a href="chat.html" title="Chat"><i class="fa fa-comments"></i></a>
+            <br>
             <a href="statistics.html" title="Statistics"><i class="fa fa-chart-line"></i></a>
+            <br>
             <a href="settings.html" title="Settings"><i class="fa fa-cogs"></i></a>
+            <br>
             <a href="logout.html" title="Logout"><i class="fa fa-sign-out-alt"></i></a>
         </div>
 
@@ -230,16 +226,15 @@
 
         const monthYearElement = document.getElementById('monthYear');
         const calendarGrid = document.getElementById('calendarGrid');
-        let appointments = {
-            '2024-12-20': { time: '04:00 PM', reason: 'Doctor appointment' },
+        //هنا هضيف الملف إللي ياخد من date
+        const appointment = {{ appointment_dict | tojson }};
 
-        };
-
+        console.log(appointment);
         function updateSidebar(date) {
             const appointment = appointments[date];
             document.getElementById('date').value = date || '';
-            document.getElementById('time').value = appointment ? appointment.time : 'No appointments';
-            document.getElementById('reason').value = appointment ? appointment.reason : 'No reason specified';
+            document.getElementById('time').value = appointment ? appointment.time : '';
+            document.getElementById('reason').value = appointment ? appointment.reason : '';
         }
 
         function renderCalendar(month, year) {
@@ -256,10 +251,6 @@
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
-                if (day <= 0 || day > daysInMonth) {
-                    continue; // تخطي الأيام التي لا توجد ضمن التاريخ الصحيح
-                }
-
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayElement = document.createElement('div');
                 dayElement.classList.add('calendar-day');
@@ -275,16 +266,6 @@
                 calendarGrid.appendChild(dayElement);
             }
         }
-
-        document.querySelectorAll('.sidebar a').forEach(link => {
-            link.addEventListener('click', function () {
-                document.querySelectorAll('.sidebar a').forEach(l => l.classList.remove('active'));
-                if (this.id !== 'calendarLink') {
-                    this.classList.add('active');
-                }
-                document.getElementById('calendarLink').classList.add('active');
-            });
-        });
 
         document.getElementById('prevMonth').addEventListener('click', () => {
             currentMonth--;
@@ -304,14 +285,12 @@
             renderCalendar(currentMonth, currentYear);
         });
 
-        // Function to dynamically update appointments
-        function updateAppointments(newAppointments) {
-            appointments = { ...appointments, ...newAppointments };
-            renderCalendar(currentMonth, currentYear);
-        }
-
         renderCalendar(currentMonth, currentYear);
 
+        window.addEventListener('load', () => {
+            const calendarIcon = document.querySelector('.sidebar a[href="calendar.html"]');
+            if (calendarIcon) calendarIcon.classList.add('active');
+        });
     </script>
 </body>
 
