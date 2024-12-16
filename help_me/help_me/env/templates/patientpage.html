@@ -645,7 +645,7 @@
       <br>
       <a href="settings.html" title="Settings"><i class="fa fa-cogs"></i></a><!--  Place the settings route here -->
       <br>
-      <a href="logout.html" title="Logout" id="logout-link"><i class="fa fa-sign-out-alt"></i></a><!--  Place the logout route here -->
+      <a href="{{ url_for('logout') }}" title="Logout"><i class="fa fa-sign-out-alt"></i></a><!--  Place the logout route here -->
     </div>
 
     <!-- Main Content -->
@@ -824,15 +824,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    
-    // logout button
-    const logoutButton = document.querySelector(".logout");
-    console.log(logoutButton)
-    logoutButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        window.location.href = "/logout";
-    });
-    
     // Monthly Data (Example)
     const monthlyData = {
       labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],

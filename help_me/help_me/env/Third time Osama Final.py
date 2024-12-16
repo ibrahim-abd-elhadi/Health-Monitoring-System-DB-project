@@ -1,6 +1,9 @@
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, flash, url_for, session
 import mysql.connector
 from collections import deque
+import logging
+
 
 # Database Connection Function
 def create_connection():
@@ -477,6 +480,7 @@ def patientpagedashboard():
     if not user_id:
         # Redirect to login if user_id is not in session
         return redirect('/login')
+    
 
     connection = create_connection()
     cursor = connection.cursor()
@@ -550,6 +554,12 @@ def patientpagedashboard():
         # Calculate average and append to the queue
         activity_growth_average = int((activity_value + sleep_value + wellness_value)*10 / 3)
         activity_growth_queue.append(activity_growth_average)
+        
+
+        print(blood_sugar_queue)
+        print(blood_pressure_queue)
+        print(heart_rate_queue)
+        print(activity_growth_queue)
 
     finally:
         cursor.close()
@@ -570,7 +580,7 @@ def patientpagedashboard():
         sleep_quality=sleep_quality,
         wellness=wellness,
         blood_sugar_list=list(blood_sugar_queue),  # Pass blood sugar queue as a list
-        blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
+        #blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
         heart_rate_list=list(heart_rate_queue),  # Pass heart rate queue as a list
         activity_growth_list=list(activity_growth_queue)  # Pass activity growth queue as a list
     )
@@ -578,6 +588,602 @@ def patientpagedashboard():
 
 
 
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(url_for('login'))
+
+
+@app.route("/patient_profile", methods=['GET', 'DELETE'])
+def patient_profile():
+    doctor_id = session.get('user_id', None)
+    # return render_template("test.html", doctor_id=doctor_id)
+    if doctor_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+    
+    
+    connection = create_connection()
+    cursor = connection.cursor()
+
+
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (doctor_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+
+    if request.method == 'DELETE':
+        query = "DELETE FROM appointments WHERE patient_id = %s"
+        cursor.execute(query, (request.get_json().get('patient_id'),))
+        connection.commit()
+        return redirect(url_for('patient_profile'))
+    
+    
+
+    query_last_doctor_id = """ SELECT appointments.reason, appointments.status,
+    appointments.date_time, users.name, users.user_id, users.profile_picture
+    FROM appointments LEFT JOIN users ON appointments.patient_id=users.user_id WHERE doctor_id = %s;"""
+    
+    # Pass doctor_id as a tuple with a single element
+    cursor.execute(query_last_doctor_id, (doctor_id,))
+    patients = cursor.fetchall()  # Fetch the single result
+    
+    cursor.close()
+    connection.close()
+    
+    if patients is None:
+        flash('User not found!', 'warning')
+        return redirect(url_for('login'))
+    
+    return render_template('patient_profile.html', patients=patients)
+
+
+
+@app.route("/update_patient_profile", methods=['GET', 'POST'])
+def update_patient_profile():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a patient
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'patient'"
+    cursor.execute(query, (user_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename != '':
+                # Save the file or process it
+                photo_name = photo.filename  # Example path
+                photo.save(f"static/uploads/{photo_name}")
+                query = "UPDATE users SET profile_picture = %s WHERE user_id = %s"
+                cursor.execute(query, (photo_name, user_id))
+                connection.commit()
+        else:
+            name = request.form['name']
+            phone = request.form['phone']
+            weight = request.form['weight']
+            chronic_conditions = request.form['chronic_conditions']
+
+        
+        try:
+
+            if name:
+                query = "UPDATE users SET name = %s WHERE user_id = %s"
+                cursor.execute(query, (name, user_id))
+                connection.commit()
+
+            if phone:
+                query = "UPDATE users SET phone = %s WHERE user_id = %s"
+                cursor.execute(query, (phone, user_id))
+                connection.commit()
+
+            if weight:
+                query = "UPDATE patients SET weight = %s WHERE patient_id = %s"
+                cursor.execute(query, (weight, user_id))
+                connection.commit()
+
+            if chronic_conditions:
+                query = "UPDATE patients SET chronic_conditions = %s WHERE patient_id = %s"
+                cursor.execute(query, (chronic_conditions, user_id))
+                connection.commit()
+
+
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('update_patient_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating user: {e}")
+            flash('An error occurred while updating your profile. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+            flash('Profile updated successfully!', 'success')
+    
+
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = "SELECT name, phone FROM users WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        name, phone = cursor.fetchone()
+        query = "SELECT weight, chronic_conditions FROM patients WHERE patient_id = %s"
+        cursor.execute(query, (user_id,))
+        weight, chronic_conditions = cursor.fetchone()
+
+    except Exception as e:
+        logging.error(f"Error fetching user information: {e}")
+        flash('An error occurred while loading your profile settings.', 'danger')
+        return redirect(url_for('update_doctor_profile'))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+    
+    return render_template('patient_update_profile.html', name=name, phone=phone, weight=weight, chronic_conditions=chronic_conditions)
+
+@app.route("/update_doctor_profile", methods=['GET', 'POST'])
+def update_doctor_profile():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (user_id,))
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        if 'photo' in request.files:
+            photo = request.files['photo']
+            if photo.filename != '':
+                # Save the file or process it
+                photo_name = photo.filename  # Example path
+                photo.save(f"static/uploads/{photo_name}")
+                query = "UPDATE users SET profile_picture = %s WHERE user_id = %s"
+                cursor.execute(query, (photo_name, user_id))
+                connection.commit()
+        else:
+            name = request.form['doctor_name']
+            phone = request.form['phone']
+            hospital_affiliation = request.form['hospital_affiliation']
+
+        
+        try:
+
+            if name:
+                query = "UPDATE users SET name = %s WHERE user_id = %s"
+                cursor.execute(query, (name, user_id))
+                connection.commit()
+
+            if phone:
+                query = "UPDATE users SET phone = %s WHERE user_id = %s"
+                cursor.execute(query, (phone, user_id))
+                connection.commit()
+
+            if hospital_affiliation:
+                query = "UPDATE doctors SET hospital_affiliation = %s WHERE doctor_id = %s"
+                cursor.execute(query, (hospital_affiliation, user_id))
+                connection.commit()
+
+
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('update_doctor_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating user: {e}")
+            flash('An error occurred while updating your profile. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+            flash('Profile updated successfully!', 'success')
+    
+
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+
+        query = "SELECT name, phone FROM users WHERE user_id = %s"
+        cursor.execute(query, (user_id,))
+        name, phone = cursor.fetchone()
+        query = "SELECT hospital_affiliation FROM doctors WHERE doctor_id = %s"
+        cursor.execute(query, (user_id,))
+        hospital_affiliation = cursor.fetchone()[0]
+
+    except Exception as e:
+        logging.error(f"Error fetching user information: {e}")
+        flash('An error occurred while loading your profile settings.', 'danger')
+        return redirect(url_for('update_doctor_profile'))
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+    
+    return render_template('doctor_update_profile.html', name=name, phone=phone, hospital_affiliation=hospital_affiliation)
+
+
+
+
+@app.route("/change_password_patient", methods=['GET', 'POST']) 
+def change_password_patient():
+
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a patient
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'patient'"
+    cursor.execute(query, (user_id,))
+    
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        current_password = request.form['current-password']
+        new_password = request.form['new-password']
+        confirm_new_password = request.form['confirm-new-password']
+
+        if new_password != confirm_new_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('change_password_patient'))
+
+        try:
+            query = "SELECT * FROM users WHERE user_id = %s AND password = %s"
+            cursor.execute(query, (user_id, current_password))
+            if cursor.fetchone() is None:
+                flash('Old password is incorrect!', 'danger')
+                return redirect(url_for('change_password_patient'))
+
+            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            cursor.execute(query, (new_password, user_id))
+            connection.commit()
+            flash('Password updated successfully!', 'success')
+            return redirect(url_for('which'))
+
+        except Exception as e:
+            logging.error(f"Error updating password: {e}")
+            flash('An error occurred while updating your password. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    return render_template('change_password_patient.html')
+
+
+@app.route("/change_password_doctor", methods=['GET', 'POST']) 
+def change_password_doctor():
+
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+
+    connection = create_connection()
+    cursor = connection.cursor()
+
+    # check if user exists and is a doctor
+    query = "SELECT * FROM users WHERE user_id = %s AND role = 'doctor'"
+    cursor.execute(query, (user_id,))
+    
+    if cursor.fetchone() is None:
+        flash('Access denied!', 'warning')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        current_password = request.form['current-password']
+        new_password = request.form['new-password']
+        confirm_new_password = request.form['confirm-new-password']
+
+        if new_password != confirm_new_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('change_password_doctor'))
+
+        try:
+            query = "SELECT * FROM users WHERE user_id = %s AND password = %s"
+            cursor.execute(query, (user_id, current_password))
+            if cursor.fetchone() is None:
+                flash('Old password is incorrect!', 'danger')
+                return redirect(url_for('change_password_doctor'))
+
+            query = "UPDATE users SET password = %s WHERE user_id = %s"
+            cursor.execute(query, (new_password, user_id))
+            connection.commit()
+            flash('Password updated successfully!', 'success')
+            return redirect(url_for('patient_profile'))
+
+        except Exception as e:
+            logging.error(f"Error updating password: {e}")
+            flash('An error occurred while updating your password. Please try again.', 'danger')
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    return render_template('change_password_doctor.html')
+
+
+
+@app.route('/doc-appointment', methods=['GET', 'POST'])
+def set_appointment():
+
+    user_id = session.get('user_id', None)
+    # Get the current doctor's ID from the session
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+    conn = create_connection()
+    cursor = conn.cursor()
+
+
+    if request.method == 'POST':
+        try:
+            # Get and type-cast form data
+            email=request.get_json().get('email')
+            # date=request.form['date']  # Expected format: 'YYYY-MM-DD'
+            # time=request.form['time']  # Expected format: 'HH:MM:SS'
+            # reason=str(request.form['reason'])  # Ensure reason is a string
+            date=request.get_json().get("date")
+            time=request.get_json().get("time")
+            reason=request.get_json().get("reason")
+
+            # Combine and validate date and time into a `datetime` object
+            date_time = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+
+            email_query = "SELECT user_id FROM users WHERE email = %s AND role = 'Patient'"
+            cursor.execute(email_query, (email,))
+            result = cursor.fetchone()
+            
+            if not result:
+                return f"No patient found with the email: {email}", 400
+            
+            # If email exists, retrieve patient_id
+            patient_id = int(result[0])
+            # Ensure ID are integers
+            doctor_id = int(user_id)
+
+            # Insert the appointment into the database
+            query = """
+                INSERT INTO appointments (patient_id,doctor_id,date_time,status,reason)
+                VALUES (%s,%s,%s,'Confirmed',%s)
+            """
+            cursor.execute(query,(patient_id,doctor_id,date_time,reason))
+            conn.commit()
+
+            # Retrieve the auto-generated appointment_id
+            appointment_id = cursor.lastrowid
+
+            # Close the database connection
+            cursor.close()
+            return render_template('Appointment Doctor.html',email=email,date=date,time=time,reason=reason)
+
+        except ValueError as ve:
+            return f"Invalid data format: {ve}", 400
+        except Exception as e:
+            return f"An error occurred: {e}", 500
+
+    # Render the form for GET requests
+    return render_template('Appointment Doctor.html')
+
+@app.route("/appointments", methods=["GET"])
+def view_appointments():
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+    # Initialize the variables to None in case no appointment is found
+    date = None
+    time = None
+    reason = None
+
+    # Connect to the database
+    try:
+        connection = create_connection()
+        cursor = connection.cursor()
+        
+        # Query to fetch only the most recent appointment for the logged-in patient
+        query = """
+            SELECT 
+                u.name AS patient_username,
+                a.date_time,
+                a.reason
+            FROM appointments AS a
+            JOIN users AS u ON a.patient_id = u.user_id
+            WHERE a.patient_id = %s
+            ORDER BY a.date_time ASC
+            LIMIT 1
+        """
+        cursor.execute(query, (user_id,))
+        appointment = cursor.fetchone()
+
+        # Extract data from the appointment and format it
+        date = appointment[1].strftime('%m/%d/%Y') if appointment[1] else None
+        time = appointment[1].strftime('%I:%M %p') if appointment[1] else None
+        reason = appointment[2]
+
+        appointment_dict = {
+            date: {
+                'time': time,
+                'reason': reason        
+            }
+        }
+
+    except Exception as e:
+        flash(f"An error occurred while fetching your appointment: {str(e)}", 'danger')
+        return redirect(url_for('which'))  # Redirect to a safer place in case of error
+
+    finally:
+        # Close the database connection safely
+        cursor.close()
+        connection.close()
+
+
+    # Pass these separate values to the HTML template
+    return render_template("Appointment of patient.html",
+                           appointment_dict=appointment_dict)
+
+
+@app.route('/add-medication', methods=['POST', 'GET'])
+def add_medication():
+    user_id = session.get('user_id', None)
+    # Get the current doctor's ID from the session
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+    # Query to get the first 5 related patients for the current doctor with appointment details
+    conn = create_connection()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+
+        # Assign each patient to a separate variable
+        # Retrieve form data
+        medication_name = request.get_json().get('medication_name').strip()
+        dosage = request.get_json().get('dosage').strip()
+        start_date = datetime.strptime(request.get_json().get('start_date'), '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.get_json().get('end_date'), '%Y-%m-%d').date()
+        instructions = request.get_json().get('instructions').strip()
+        patient_id = request.get_json().get('patient_id')
+
+        # # Validate dates
+        # if end_date < start_date:
+        #     flash("End date cannot be earlier than start date.", "danger")
+        #     return render_template('new_med.html',patients=related_patients)
+
+        # Insert medication into the database
+        medication_query = """
+            INSERT INTO medications (patient_id, doctor_id, medication_name, dosage, start_date, end_date, instructions)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """
+        values = (patient_id, user_id, medication_name, dosage, start_date, end_date, instructions)
+        cursor.execute(medication_query, values)
+        medication_id = cursor.lastrowid
+        conn.commit()
+
+        flash("Medication added successfully!", "success")
+    
+
+    
+
+    patient_query = """
+        SELECT users.user_id, users.name, users.date_of_birth, appointments.reason, appointments.date_time
+        FROM users
+        JOIN appointments ON users.user_id = appointments.patient_id
+        WHERE appointments.doctor_id = %s
+        ORDER BY appointments.date_time ASC
+        LIMIT 5;
+    """
+
+    current_date = datetime.now()
+
+        # Add age to each patient record
+    cursor.execute(patient_query, (user_id,))
+    related_patients = cursor.fetchall()
+
+    for patient in related_patients:
+        dob = patient[2]
+        if dob:
+            # Calculate age
+            age = current_date.year - dob.year
+            # Adjust if the current date hasn't yet reached the patient's birthday this year
+            if (current_date.month, current_date.day) < (dob.month, dob.day):
+                age -= 1
+        else:
+            age = None
+
+
+    return render_template('medication.html', patients=related_patients, age=age)
+
+
+@app.route("/patient-medications", methods=["GET"])
+def medication_details():
+
+    user_id = session.get('user_id', None)
+    if user_id is None:
+        flash('User is not logged in!', 'danger')
+        return redirect(url_for('login'))
+
+    # Connect to the database
+    connection = create_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Query to join medications and users tables
+    query = """
+        SELECT 
+            m.medication_name, 
+            m.dosage, 
+            u.name AS doctor_name, 
+            m.start_date, 
+            m.end_date, 
+            m.instructions
+        FROM medications AS m
+        JOIN users AS u ON m.doctor_id = u.user_id
+        WHERE m.patient_id = %s
+    """
+    cursor.execute(query, (user_id,))
+    medications = cursor.fetchall()
+    
+    # # Separate data into individual variables
+    # medication_name=[med["medication_name"] for med in medications]
+    # dosage =[med["dosage"] for med in medications]
+    # doctor_name=[med["doctor_name"] for med in medications]
+    # start_date=[med["start_date"] for med in medications]
+    # end_date=[med["end_date"] for med in medications]
+    # instruction=[med["instructions"] for med in medications]
+    
+    # Close the connection
+    cursor.close()
+    connection.close()
+    
+    # Pass separated data to the HTML template
+    return render_template(
+        "medication_patient.html", 
+        medications=medications
+    )
 
 # Run the application
 if __name__ == '__main__':
