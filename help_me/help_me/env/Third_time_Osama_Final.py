@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='yY7$ls44',  # Update your MySQL password here
+            password='admin',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -467,6 +467,26 @@ def index():
 
 #--------------------------------------------------------------------------------------------------------------------#
 
+
+def blood_pressure_to_score(bp_str):
+    """
+    Convert a blood pressure string 'systolic/diastolic' into a score.
+    """
+    try:
+        # Split the input string into systolic and diastolic
+        systolic, diastolic = map(int, bp_str.split('/'))
+        
+        # Normalize the blood pressure to a score around 70
+        # Formula: Adjust the weight to scale values around 70
+        score = 70 + ((systolic - 120) * 0.1) + ((diastolic - 80) * 0.2)
+        
+        # Ensure the score is within a reasonable range (e.g., 0-100)
+        score = max(0, min(100, round(score)))
+        
+        return score
+    except (ValueError, TypeError):
+        return 0  # Return 0 if input is invalid
+
 # Queues for rolling data
 blood_sugar_queue = deque([70, 80, 75, 85, 80], maxlen=5)
 blood_pressure_queue = deque([70, 80, 75, 85, 80], maxlen=5)
@@ -535,10 +555,16 @@ def patientpagedashboard():
 
         # Unpack health metrics
         blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness = health_metrics
+        
+
+
+        # Convert blood pressure to score
+        blood_pressure_score = blood_pressure_to_score(blood_pressure)
+
 
         # Update the queues for blood sugar, blood pressure, and heart rate
         blood_sugar_queue.append(blood_sugar)
-        blood_pressure_queue.append(blood_pressure)
+        blood_pressure_queue.append(blood_pressure_score)
         heart_rate_queue.append(heart_rate)
 
         # Map activity_level, sleep_quality, and wellness to numeric values
@@ -580,7 +606,7 @@ def patientpagedashboard():
         sleep_quality=sleep_quality,
         wellness=wellness,
         blood_sugar_list=list(blood_sugar_queue),  # Pass blood sugar queue as a list
-        #blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
+        blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
         heart_rate_list=list(heart_rate_queue),  # Pass heart rate queue as a list
         activity_growth_list=list(activity_growth_queue)  # Pass activity growth queue as a list
     )
