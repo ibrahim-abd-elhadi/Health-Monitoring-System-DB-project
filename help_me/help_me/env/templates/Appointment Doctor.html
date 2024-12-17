@@ -39,12 +39,12 @@
                 <li>
                     <span><i class="fas fa-question-circle"></i> Help</span>
                     <ul>
-                        <li><a href="#" class="menu-item"><i class="fas fa-cogs"></i> Settings</a></li>
+                        <li><a href="{{ url_for('update_doctor_profile') }}" class="menu-item"><i class="fas fa-cogs"></i> Settings</a></li>
                         <li><a href="#" class="menu-item"><i class="fas fa-book"></i> Documentation</a></li>
                     </ul>
                 </li>
             </ul>
-            <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
+            <a href="{{ url_for('logout') }}" class="logout"><i class="fas fa-sign-out-alt"></i> Log out</a>
         </aside>
 
         <div class="main-content">

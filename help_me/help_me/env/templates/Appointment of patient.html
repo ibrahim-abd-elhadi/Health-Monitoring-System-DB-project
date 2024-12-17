@@ -230,8 +230,8 @@
 
         const monthYearElement = document.getElementById('monthYear');
         const calendarGrid = document.getElementById('calendarGrid');
-        let appointments = {{ appointment_dict | tojson }};
-        console.log(appointments)
+
+        let appointments = [{'2024-12-05': {'time': '08:30 AM', 'reason': 'Consultation for Diet'}}, {'2024-12-19': {'time': '03:12 AM', 'reason': 'dwqdwq'}}, {'2024-12-27': {'time': '05:43 PM', 'reason': 'newwwwwwwwwwwwwww'}}];
 
         function updateSidebar(date) {
             const appointment = appointments[date];
@@ -262,9 +262,10 @@
                 const dayElement = document.createElement('div');
                 dayElement.classList.add('calendar-day');
 
-                if (appointments[dateStr]) {
+                let dateExists = appointments.some(app => dateStr in app)
+                if (dateExists) {
                     dayElement.classList.add('highlight');
-                    dayElement.textContent = appointments[dateStr].time;
+                    dayElement.textContent = appointments[appointments.findIndex(app => dateStr in app)][dateStr].time;
                 } else {
                     dayElement.textContent = day;
                 }

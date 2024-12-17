@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='AQI.ib1235879',  # Update your MySQL password here
+            password='yY7$ls44',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
@@ -54,6 +54,7 @@ def login():
             return redirect(url_for('patientpagedashboard'))     #333333333333333333333333333333333333333333333333333333333333333333333333333333333333333
         elif user[5].lower() == 'doctor':
             flash('Login successful!', 'success')
+            session['user_id'] = user[0]  # Assuming `user[0]` is `user_id`
             return redirect(url_for('index'))
         else:
             flash('Invalid user role.', 'error')
@@ -1112,22 +1113,25 @@ def view_appointments():
             JOIN users AS u ON a.patient_id = u.user_id
             WHERE a.patient_id = %s
             ORDER BY a.date_time ASC
-            LIMIT 1
         """
+
         cursor.execute(query, (user_id,))
-        appointment = cursor.fetchone()
+        appointments = cursor.fetchall()
 
-        # Extract data from the appointment and format it
-        date = appointment[1].strftime('%Y-%m-%d') if appointment[1] else None
-        time = appointment[1].strftime('%I:%M %p') if appointment[1] else None
-        reason = appointment[2]
+        # Create an array of dictionaries to store the appointments
+        appointments_array = [];
+        # Extract data from the appointments and format it
+        for appointment in appointments:
+            date = appointment[1].strftime('%Y-%m-%d') if appointment[1] else None
+            time = appointment[1].strftime('%I:%M %p') if appointment[1] else None
+            reason = appointment[2]
 
-        appointment_dict = {
-            date: {
-                'time': time,
-                'reason': reason        
-            }
-        }
+            appointments_array.append({
+                date: {
+                    'time': time,
+                    'reason': reason        
+                }
+            }) 
 
     except Exception as e:
         flash(f"An error occurred while fetching your appointment: {str(e)}", 'danger')
@@ -1141,7 +1145,7 @@ def view_appointments():
 
     # Pass these separate values to the HTML template
     return render_template("Appointment of patient.html",
-                           appointment_dict=appointment_dict)
+                           appointments_array=appointments_array)
 
 
 @app.route('/add-medication', methods=['POST', 'GET'])
@@ -1262,6 +1266,12 @@ def medication_details():
         "medication_patient.html", 
         medications=medications
     )
+
+
+@app.route("/test")
+def test():
+    user_id = session.get('user_id', None)
+    return render_template("test.html", user_id=user_id)
 
 # Run the application
 if __name__ == '__main__':
