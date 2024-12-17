@@ -12,7 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='admin',  # Update your MySQL password here
+            password='yY7$ls44',  # Update your MySQL password here
             database='healthcaresystem'
         )
         return connection
