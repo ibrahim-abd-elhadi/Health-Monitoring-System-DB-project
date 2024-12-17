@@ -12,7 +12,11 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-            password='yY7$ls44',  # Update your MySQL password here
+<<<<<<< Updated upstream
+            password='admin',  # Update your MySQL password here
+=======
+            password='AQI.ib1235879',  # Update your MySQL password here
+>>>>>>> Stashed changes
             database='healthcaresystem'
         )
         return connection
@@ -433,7 +437,6 @@ def index():
 
         # Update the health trend queue
         health_trend_queue.append(new_health_trend)
-        print(health_trend_queue)
         
 
 
@@ -521,24 +524,55 @@ def index():
 #--------------------------------------------------------------------------------------------------------------------#
 
 
-def blood_pressure_to_score(bp_str):
+# def blood_pressure_to_score(bp_str):
+#     """
+#     Convert a blood pressure string 'systolic/diastolic' into a score.
+#     """
+#     try:
+#         # Split the input string into systolic and diastolic
+#         systolic, diastolic = map(int, bp_str.split('/'))
+        
+#         # Normalize the blood pressure to a score around 70
+#         # Formula: Adjust the weight to scale values around 70
+#         score = 70 + ((systolic - 120) * 0.1) + ((diastolic - 80) * 0.2)
+        
+#         # Ensure the score is within a reasonable range (e.g., 0-100)
+#         score = max(0, min(100, round(score)))
+        
+#         return score
+#     except (ValueError, TypeError):
+#         return 0  # Return 0 if input is invalid
+
+
+def blood_pressure_to_score(bp_list):
     """
-    Convert a blood pressure string 'systolic/diastolic' into a score.
+    Convert a list of blood pressure strings 'systolic/diastolic' into a list of scores.
     """
-    try:
-        # Split the input string into systolic and diastolic
-        systolic, diastolic = map(int, bp_str.split('/'))
-        
-        # Normalize the blood pressure to a score around 70
-        # Formula: Adjust the weight to scale values around 70
-        score = 70 + ((systolic - 120) * 0.1) + ((diastolic - 80) * 0.2)
-        
-        # Ensure the score is within a reasonable range (e.g., 0-100)
-        score = max(0, min(100, round(score)))
-        
-        return score
-    except (ValueError, TypeError):
-        return 0  # Return 0 if input is invalid
+    scores = []
+    for bp_str in bp_list:
+        try:
+            # Split the input string into systolic and diastolic
+            systolic, diastolic = map(int, bp_str.split('/'))
+            
+            # Normalize the blood pressure to a score around 70
+            score = 70 + ((systolic - 120) * 0.1) + ((diastolic - 80) * 0.2)
+            
+            # Ensure the score is within a reasonable range (0-100)
+            score = max(0, min(100, round(score)))
+            
+            scores.append(score)
+        except (ValueError, TypeError):
+            scores.append(0)  # Append 0 if input is invalid
+    return scores
+
+
+
+
+
+
+
+
+
 
 # Queues for rolling data
 blood_sugar_queue = deque([70, 80, 75, 85, 80], maxlen=5)
@@ -591,54 +625,145 @@ def patientpagedashboard():
             health_status = "Cautious"
 
         # Query to fetch additional health metrics
+        # cursor.execute("""
+        #     SELECT blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness 
+        #     FROM health_metrics 
+        #     WHERE patient_id = %s
+        # """, (user_id,))
+        # health_metrics = cursor.fetchone()
+
+        # # Explicitly consume the cursor to avoid issues
+        # cursor.fetchall()
+
+
+        # if not health_metrics:
+        #     # Handle case where no health metrics are found
+        #     return render_template('error.html', message="Health metrics not found")
+
+        # # Unpack health metrics
+        # blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness = health_metrics
+        
+        ########################################################################################
         cursor.execute("""
-            SELECT blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness 
-            FROM health_metrics 
-            WHERE patient_id = %s
-        """, (user_id,))
-        health_metrics = cursor.fetchone()
+        SELECT 
+            blood_pressure, 
+            heart_rate, 
+            blood_sugar
+        FROM 
+            health_metrics 
+        WHERE 
+            patient_id = %s
+        ORDER BY 
+            metric_id DESC
+        LIMIT 5
+""", (user_id,))
+        last_5_health_metrics = cursor.fetchall()
 
-        # Explicitly consume the cursor to avoid issues
-        cursor.fetchall()
+        cursor.execute("""
+    SELECT 
+        activity_level, 
+        sleep_quality, 
+        wellness
+    FROM 
+        health_metrics 
+    WHERE 
+        patient_id = %s
+    ORDER BY 
+        metric_id DESC
+    LIMIT 1
+""", (user_id,))
+        latest_activity_metrics = cursor.fetchone()
+
+# Handle the cases when no data is found
+        if not last_5_health_metrics:
+            return render_template('error.html', message="No health metrics found for blood_pressure, heart_rate, or blood_sugar.")
+
+        if not latest_activity_metrics:
+            return render_template('error.html', message="No activity metrics found for this patient.")
+
+# Unpack the data
+        blood_pressure_list = [row[0] for row in last_5_health_metrics]
+        heart_rate_list = [row[1] for row in last_5_health_metrics]
+        blood_sugar_list = [row[2] for row in last_5_health_metrics]
 
 
-        if not health_metrics:
-            # Handle case where no health metrics are found
-            return render_template('error.html', message="Health metrics not found")
+        #gets the last value in each list
+        blood_pressure = blood_pressure_list[-1]
+        heart_rate = heart_rate_list[-1]
+        blood_sugar = blood_sugar_list[-1]
 
-        # Unpack health metrics
-        blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness = health_metrics
+        activity_level, sleep_quality, wellness = latest_activity_metrics
+
+
+
+        # Mapping for the metrics
+        activity_level_mapping = {"High": 30, "Medium": 20, "Low": 10}
+        sleep_quality_mapping = {"Good": 30, "Average": 20, "Poor": 10}
+        wellness_mapping = {"Excellent": 40, "Good": 30, "Fair": 20, "Poor": 10}
+
+        # List to hold the average values for each month
+        monthly_averages = []
+
+        # Loop through each month (1 to 12)
+        for month in range(1, 13):
+            cursor.execute("""
+        SELECT 
+            activity_level,
+            sleep_quality,
+            wellness
+        FROM 
+            health_metrics
+        WHERE 
+            patient_id = %s AND MONTH(date_time) = %s
+        ORDER BY 
+            metric_id DESC
+        LIMIT 1
+            """, (user_id, month))
+    
+    # Fetch the latest data for this month
+            result = cursor.fetchone()
+            if result:
+                # Map the categorical values to numeric
+                activity_level, sleep_quality, wellness = result
+
+                activity_value = activity_level_mapping.get(activity_level, 0)
+                sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
+                wellness_value = wellness_mapping.get(wellness, 0)
+
+                # Calculate the average for this month and append to the list
+                average_value = int((activity_value + sleep_value + wellness_value) / 3)
+                monthly_averages.append(average_value)
+            else:
+                # If no data found for this month, append a default value (e.g., 0)
+                monthly_averages.append(00)
+
+        # Now monthly_averages contains the average value for each month
+        print("Monthly Averages:")
+        print(monthly_averages)
+
+
+
+
+
+
+
+        ##############################################################################################
         
-
-
+        
         # Convert blood pressure to score
-        blood_pressure_score = blood_pressure_to_score(blood_pressure)
-
-
-        # Update the queues for blood sugar, blood pressure, and heart rate
-        blood_sugar_queue.append(blood_sugar)
-        blood_pressure_queue.append(blood_pressure_score)
-        heart_rate_queue.append(heart_rate)
-
-        # Map activity_level, sleep_quality, and wellness to numeric values
-        activity_level_mapping = {"High": 3, "Medium": 2, "Low": 1}
-        sleep_quality_mapping = {"Good": 3, "Average": 2, "Poor": 1}
-        wellness_mapping = {"Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1}
-
-        # Get numeric values for the metrics
-        activity_value = activity_level_mapping.get(activity_level, 0)
-        sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
-        wellness_value = wellness_mapping.get(wellness, 0)
-
-        # Calculate average and append to the queue
-        activity_growth_average = int((activity_value + sleep_value + wellness_value)*10 / 3)
-        activity_growth_queue.append(activity_growth_average)
+        blood_pressure_score = blood_pressure_to_score(blood_pressure_list)
         
 
-        print(blood_sugar_queue)
-        print(blood_pressure_queue)
-        print(heart_rate_queue)
-        print(activity_growth_queue)
+
+
+
+
+
+        
+
+
+
+        
 
     finally:
         cursor.close()
@@ -658,10 +783,10 @@ def patientpagedashboard():
         activity_level=activity_level,
         sleep_quality=sleep_quality,
         wellness=wellness,
-        blood_sugar_list=list(blood_sugar_queue),  # Pass blood sugar queue as a list
-        blood_pressure_list=list(blood_pressure_queue),  # Pass blood pressure queue as a list
-        heart_rate_list=list(heart_rate_queue),  # Pass heart rate queue as a list
-        activity_growth_list=list(activity_growth_queue)  # Pass activity growth queue as a list
+        blood_sugar_list=blood_sugar_list,  # Pass blood sugar queue as a list
+        blood_pressure_list=blood_pressure_score,  # Pass blood pressure queue as a list
+        heart_rate_list=heart_rate_list,  # Pass heart rate queue as a list
+        activity_growth_list=monthly_averages  # Pass activity growth queue as a list
     )
 
 
