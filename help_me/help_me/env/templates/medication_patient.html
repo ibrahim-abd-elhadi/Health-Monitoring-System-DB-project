@@ -141,18 +141,18 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <br>
-            <a href="index.html" class="home-icon" title="Home"><i class="fa fa-home"></i></a>
+            <a href="{{ url_for('patientpagedashboard') }}" class="home-icon" title="Home"><i class="fa fa-home"></i></a>
             <br>
-            <a href="calendar.html" title="Calendar"><i class="fa fa-calendar"></i></a>
+            <a href="{{ url_for('view_appointments') }}" title="Calendar"><i class="fa fa-calendar"></i></a>
             <br>
             <a href="chat.html" title="Chat"><i class="fa fa-comments"></i></a>
             <br>
             <!-- Highlighted Link to Statistics -->
             <a href="statistics.html" title="Statistics" class="highlight"><i class="fa fa-chart-line"></i></a>
             <br>
-            <a href="settings.html" title="Settings"><i class="fa fa-cogs"></i></a>
+            <a href="{{ url_for('update_patient_profile') }}" title="Settings"><i class="fa fa-cogs"></i></a>
             <br>
-            <a href="logout.html" title="Logout"><i class="fa fa-sign-out-alt"></i></a>
+            <a href="{{ url_for('logout') }}" title="Logout"><i class="fa fa-sign-out-alt"></i></a>
         </div>
 
         <!-- Main Content -->

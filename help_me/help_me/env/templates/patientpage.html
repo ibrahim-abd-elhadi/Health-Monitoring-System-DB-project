@@ -637,13 +637,13 @@
       <a href="{{ url_for('patientpagedashboard') }}" class="home-icon" title="Home"><i class="fa fa-home"></i></a>
       <br>
       <!-- Other Icons -->
-      <a href="calendar.html" title="Calendar"><i class="fa fa-calendar"></i></a> <!-- Place the calender route here -->
+      <a href="{{ url_for('view_appointments') }}" title="Calendar"><i class="fa fa-calendar"></i></a> <!-- Place the calender route here -->
       <br>
       <a href="chat.html" title="Chat"><i class="fa fa-comments"></i></a><!--  Place the chat route here -->
       <br>
       <a href="statistics.html" title="Statistics"><i class="fa fa-chart-line"></i></a><!--  Place the statistics route here -->
       <br>
-      <a href="settings.html" title="Settings"><i class="fa fa-cogs"></i></a><!--  Place the settings route here -->
+      <a href="{{ url_for('update_patient_profile') }}" title="Settings"><i class="fa fa-cogs"></i></a><!--  Place the settings route here -->
       <br>
       <a href="{{ url_for('logout') }}" title="Logout"><i class="fa fa-sign-out-alt"></i></a><!--  Place the logout route here -->
     </div>

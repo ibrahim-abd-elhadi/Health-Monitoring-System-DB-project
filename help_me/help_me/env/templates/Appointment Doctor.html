@@ -17,9 +17,9 @@
                 <h2>Menu</h2>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="#" class="menu-item" id="dashboard-link"><i class="fas fa-tachometer-alt"></i>
+                <li><a href="{{ url_for('index') }}" class="menu-item" id="dashboard-link"><i class="fas fa-tachometer-alt"></i>
                         Dashboard</a></li>
-                <li><a href="#" class="menu-item" id="patient-profile-link"><i class="fas fa-user"></i> Patient
+                <li><a href="{{ url_for('patient_profile') }}" class="menu-item" id="patient-profile-link"><i class="fas fa-user"></i> Patient
                         Profile</a></li>
                 <li>
                     <span><i class="fas fa-chart-line"></i> Analytics</span>
@@ -31,7 +31,7 @@
                     <span><i class="fas fa-calendar-alt"></i> Schedule</span>
                     <ul>
                         <li><a href="#" class="menu-item"><i class="fas fa-comments"></i> Chat</a></li>
-                        <li><a href="#" class="menu-item active" id="appointments-link"><i
+                        <li><a href="{{ url_for('set_appointment') }}" class="menu-item active" id="appointments-link"><i
                                     class="fas fa-calendar-check"></i> Appointments</a>
                         </li>
                     </ul>
