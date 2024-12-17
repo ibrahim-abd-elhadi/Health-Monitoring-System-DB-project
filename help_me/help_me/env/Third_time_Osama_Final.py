@@ -333,6 +333,63 @@ def index():
     cursor = connection.cursor()
 
     try:
+        ###################################################################################
+  # Mapping for the metrics
+        activity_level_mapping = {"High": 3, "Medium": 2, "Low": 1}
+        sleep_quality_mapping = {"Good": 3, "Average": 2, "Poor": 1}
+        wellness_mapping = {"Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1}
+
+        # List to hold the average values for each month
+        monthly_averages = []
+
+        # Loop through each month (1 to 12)
+        for month in range(1, 8):
+            cursor.execute("""
+        SELECT 
+            activity_level,
+            sleep_quality,
+            wellness
+        FROM 
+            health_metrics
+        WHERE 
+            patient_id = %s AND MONTH(date_time) = %s
+        ORDER BY 
+            metric_id DESC
+        LIMIT 1
+            """, (user_id, month))
+    
+            # Fetch the latest data for this month
+            result = cursor.fetchone()
+
+            if result:
+                # Map the categorical values to numeric
+                activity_level, sleep_quality, wellness = result
+        
+                activity_value = activity_level_mapping.get(activity_level, 0)
+                sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
+                wellness_value = wellness_mapping.get(wellness, 0)
+        
+                # Calculate the average for this month and append to the list
+                average_value = int((activity_value + sleep_value + wellness_value) / 3)
+                monthly_averages.append(average_value)
+            else:
+                # If no data found for this month, append a default value (e.g., 0)
+                monthly_averages.append(0)
+            print(monthly_averages)
+            
+        
+
+
+
+
+
+
+
+
+
+
+
+################################################################################################
         # Query the total number of rows for activity levels
         cursor.execute("SELECT COUNT(*) FROM health_metrics WHERE activity_level IN ('High', 'Medium', 'Low')")
         total_activity_rows = cursor.fetchone()[0]
@@ -506,7 +563,7 @@ def index():
         activity=int(100*activity),
         sleep=int(100*sleep),
         wellness=int(100*wellness),
-        health_trend=list(health_trend_queue)  # Pass the queue as a list to the template
+        health_trend=monthly_averages  # Pass the queue as a list to the template
         #highest_name=highest_name,
         #lowest_name=lowest_name,
         #moderate_name=moderate_name
@@ -620,24 +677,6 @@ def patientpagedashboard():
         else:
             health_status = "Cautious"
 
-        # Query to fetch additional health metrics
-        # cursor.execute("""
-        #     SELECT blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness 
-        #     FROM health_metrics 
-        #     WHERE patient_id = %s
-        # """, (user_id,))
-        # health_metrics = cursor.fetchone()
-
-        # # Explicitly consume the cursor to avoid issues
-        # cursor.fetchall()
-
-
-        # if not health_metrics:
-        #     # Handle case where no health metrics are found
-        #     return render_template('error.html', message="Health metrics not found")
-
-        # # Unpack health metrics
-        # blood_pressure, heart_rate, blood_sugar, activity_level, sleep_quality, wellness = health_metrics
         
         ########################################################################################
         cursor.execute("""
