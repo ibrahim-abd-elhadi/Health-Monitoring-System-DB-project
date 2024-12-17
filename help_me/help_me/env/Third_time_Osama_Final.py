@@ -12,17 +12,14 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-<<<<<<< Updated upstream
             password='admin',  # Update your MySQL password here
-=======
-            password='AQI.ib1235879',  # Update your MySQL password here
->>>>>>> Stashed changes
             database='healthcaresystem'
         )
         return connection
     except mysql.connector.Error as err:
         print(f"Error connecting to database: {err}")
         exit(1)
+
 
 # Initialize Flask Application
 app = Flask(__name__)
@@ -338,48 +335,68 @@ def index():
 
     try:
         ###################################################################################
-  # Mapping for the metrics
+        # Mapping for the metrics
         activity_level_mapping = {"High": 3, "Medium": 2, "Low": 1}
         sleep_quality_mapping = {"Good": 3, "Average": 2, "Poor": 1}
         wellness_mapping = {"Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1}
 
-        # List to hold the average values for each month
+        # List to hold the final monthly averages
         monthly_averages = []
 
         # Loop through each month (1 to 12)
-        for month in range(1, 8):
+        for month in range(1, 13):
+            # Fetch all activity_level, sleep_quality, and wellness data for the month
             cursor.execute("""
         SELECT 
-            activity_level,
-            sleep_quality,
+            activity_level, 
+            sleep_quality, 
             wellness
         FROM 
             health_metrics
         WHERE 
-            patient_id = %s AND MONTH(date_time) = %s
-        ORDER BY 
-            metric_id DESC
-        LIMIT 1
-            """, (user_id, month))
+            MONTH(date_time) = %s
+            """, (month,))
     
-            # Fetch the latest data for this month
-            result = cursor.fetchone()
+            results = cursor.fetchall()
 
-            if result:
-                # Map the categorical values to numeric
-                activity_level, sleep_quality, wellness = result
+            # Initialize sums and counts
+            total_activity = 0
+            total_sleep = 0
+            total_wellness = 0
+            count = 0
+
+            # Process each row and map values
+            for row in results:
+                activity_level, sleep_quality, wellness = row
         
                 activity_value = activity_level_mapping.get(activity_level, 0)
                 sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
                 wellness_value = wellness_mapping.get(wellness, 0)
-        
-                # Calculate the average for this month and append to the list
-                average_value = int((activity_value + sleep_value + wellness_value) / 3)
-                monthly_averages.append(average_value)
+
+                # Sum up the values
+                total_activity += activity_value
+                total_sleep += sleep_value
+                total_wellness += wellness_value
+
+                count += 1
+
+            # Calculate the averages for this month
+            if count > 0:
+                avg_activity = total_activity / count
+                avg_sleep = total_sleep / count
+                avg_wellness = total_wellness / count
+
+                # Calculate the combined monthly average
+                monthly_average = int((avg_activity + avg_sleep + avg_wellness) / 3)
             else:
-                # If no data found for this month, append a default value (e.g., 0)
-                monthly_averages.append(0)
-            print(monthly_averages)
+                # If no data for this month, default to 0
+                monthly_average = 0
+
+            # Append the monthly average to the list
+            monthly_averages.append(monthly_average)
+
+        # Output the list of monthly averages
+        print(monthly_averages)
             
         
 
