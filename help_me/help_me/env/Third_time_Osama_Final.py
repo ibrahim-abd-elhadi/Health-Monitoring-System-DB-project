@@ -12,7 +12,11 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
+<<<<<<< Updated upstream
             password='admin',  # Update your MySQL password here
+=======
+            password='AQI.ib1235879',  # Update your MySQL password here
+>>>>>>> Stashed changes
             database='healthcaresystem'
         )
         return connection
@@ -1237,11 +1241,43 @@ def set_appointment():
             # Close the database connection
             cursor.close()
             return render_template('Appointment Doctor.html',email=email,date=date,time=time,reason=reason)
-
+            # Render the form for GET requests
+        #return render_template('Appointment Doctor.html')
         except ValueError as ve:
             return f"Invalid data format: {ve}", 400
         except Exception as e:
             return f"An error occurred: {e}", 500
+        # Query to retrieve only date_time for all appointments related to the current doctor
+    fetch_query = """
+        SELECT date_time
+        FROM appointments
+        WHERE doctor_id = %s
+        ORDER BY date_time DESC
+    """
+    cursor.execute(fetch_query, (user_id,))
+    appointment_times = cursor.fetchall()
+    appointments_array = [];
+    # Extract data from the appointments and format it
+    for appointment in appointment_times:
+        date = appointment[0].strftime('%Y-%m-%d') if appointment[0] else None
+        time = appointment[0].strftime('%I:%M %p') if appointment[0] else None
+
+        appointments_array.append({
+            date: {
+                'time': time,     
+            }
+        }) 
+
+    # Close the database connection
+    cursor.close()
+    conn.close()
+
+    # Render the template with the list of date_time values
+    return render_template(
+        'Appointment Doctor.html',
+        appointments_array=appointments_array  # Pass only date_time values
+    )
+
 
     # Render the form for GET requests
     return render_template('Appointment Doctor.html')
