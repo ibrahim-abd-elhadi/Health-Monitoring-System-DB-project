@@ -433,7 +433,6 @@ def index():
 
         # Update the health trend queue
         health_trend_queue.append(new_health_trend)
-        print(health_trend_queue)
         
 
 
@@ -693,9 +692,50 @@ def patientpagedashboard():
 
 
 
-        
+        # Mapping for the metrics
+        activity_level_mapping = {"High": 30, "Medium": 20, "Low": 10}
+        sleep_quality_mapping = {"Good": 30, "Average": 20, "Poor": 10}
+        wellness_mapping = {"Excellent": 40, "Good": 30, "Fair": 20, "Poor": 10}
 
+        # List to hold the average values for each month
+        monthly_averages = []
 
+        # Loop through each month (1 to 12)
+        for month in range(1, 13):
+            cursor.execute("""
+        SELECT 
+            activity_level,
+            sleep_quality,
+            wellness
+        FROM 
+            health_metrics
+        WHERE 
+            patient_id = %s AND MONTH(date_time) = %s
+        ORDER BY 
+            metric_id DESC
+        LIMIT 1
+            """, (user_id, month))
+    
+    # Fetch the latest data for this month
+            result = cursor.fetchone()
+            if result:
+                # Map the categorical values to numeric
+                activity_level, sleep_quality, wellness = result
+
+                activity_value = activity_level_mapping.get(activity_level, 0)
+                sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
+                wellness_value = wellness_mapping.get(wellness, 0)
+
+                # Calculate the average for this month and append to the list
+                average_value = int((activity_value + sleep_value + wellness_value) / 3)
+                monthly_averages.append(average_value)
+            else:
+                # If no data found for this month, append a default value (e.g., 0)
+                monthly_averages.append(00)
+
+        # Now monthly_averages contains the average value for each month
+        print("Monthly Averages:")
+        print(monthly_averages)
 
 
 
@@ -708,22 +748,8 @@ def patientpagedashboard():
         
         # Convert blood pressure to score
         blood_pressure_score = blood_pressure_to_score(blood_pressure_list)
-        print(blood_pressure_score)
+        
 
-        # Update the queues for blood sugar, blood pressure, and heart rate
-        #blood_sugar_queue.append(blood_sugar)
-        #blood_pressure_queue.append(blood_pressure_score)
-        #heart_rate_queue.append(heart_rate)
-
-        # Map activity_level, sleep_quality, and wellness to numeric values
-        activity_level_mapping = {"High": 3, "Medium": 2, "Low": 1}
-        sleep_quality_mapping = {"Good": 3, "Average": 2, "Poor": 1}
-        wellness_mapping = {"Excellent": 4, "Good": 3, "Fair": 2, "Poor": 1}
-
-        # Get numeric values for the metrics
-        activity_value = activity_level_mapping.get(activity_level, 0)
-        sleep_value = sleep_quality_mapping.get(sleep_quality, 0)
-        wellness_value = wellness_mapping.get(wellness, 0)
 
 
 
@@ -733,16 +759,7 @@ def patientpagedashboard():
 
 
 
-
-        # Calculate average and append to the queue
-        activity_growth_average = int((activity_value + sleep_value + wellness_value)*10 / 3)
-        activity_growth_queue.append(activity_growth_average)
         
-
-        print(blood_sugar_queue)
-        print(blood_pressure_queue)
-        print(heart_rate_queue)
-        print(activity_growth_queue)
 
     finally:
         cursor.close()
@@ -765,7 +782,7 @@ def patientpagedashboard():
         blood_sugar_list=blood_sugar_list,  # Pass blood sugar queue as a list
         blood_pressure_list=blood_pressure_score,  # Pass blood pressure queue as a list
         heart_rate_list=heart_rate_list,  # Pass heart rate queue as a list
-        activity_growth_list=list(activity_growth_queue)  # Pass activity growth queue as a list
+        activity_growth_list=monthly_averages  # Pass activity growth queue as a list
     )
 
 
