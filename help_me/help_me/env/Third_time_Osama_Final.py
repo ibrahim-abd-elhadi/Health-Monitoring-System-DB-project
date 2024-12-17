@@ -12,11 +12,7 @@ def create_connection():
             host='127.0.0.1',
             port=3306,
             user='root',
-<<<<<<< Updated upstream
-            password='admin',  # Update your MySQL password here
-=======
-            password='AQI.ib1235879',  # Update your MySQL password here
->>>>>>> Stashed changes
+            password='yY7$ls44',
             database='healthcaresystem'
         )
         return connection
