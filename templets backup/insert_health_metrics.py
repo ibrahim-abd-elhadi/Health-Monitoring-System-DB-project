@@ -44,7 +44,7 @@ def create_connection():
             host='AQI',  
             port=3306,  
             user='root',  
-            password='AQI.ib1235879',  
+            password='password',  
             database='healthcaresystem'  
         )
         print("Database connection established.")
