@@ -82,7 +82,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/java2.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
         const submenuTriggers = document.querySelectorAll('.sidebar-menu li span');
@@ -231,6 +230,7 @@
                     "time": timeInput.value
                 })
             })
+            location.reload();
         });
 
         // Generate the initial calendar

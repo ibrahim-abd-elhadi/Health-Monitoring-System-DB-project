@@ -138,9 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     'patient_id': patient_id
                 })
             })
-
+            
+            
             const card = this.closest('.patient-card');
             patientList.removeChild(card);
+            location.reload();
         });
     });
 

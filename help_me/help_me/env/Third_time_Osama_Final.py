@@ -878,7 +878,6 @@ def patient_profile():
         query = "DELETE FROM appointments WHERE patient_id = %s"
         cursor.execute(query, (request.get_json().get('patient_id'),))
         connection.commit()
-        return redirect(url_for('patient_profile'))
     
     
 
@@ -1257,7 +1256,7 @@ def set_appointment():
 
             # Close the database connection
             cursor.close()
-            return render_template('Appointment Doctor.html',email=email,date=date,time=time,reason=reason)
+            return redirect(url_for('doc-appointment'))
             # Render the form for GET requests
         #return render_template('Appointment Doctor.html')
         except ValueError as ve:
